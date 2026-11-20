@@ -112,7 +112,7 @@ export function deltaOf(session: Session, build: MissionBuild): StateDelta {
   const b = build.beats[Math.min(session.beat, last)]!;
   const satisfied = evalCond(b.advanceWhen, session);
   return {
-    beat: { index: session.beat, total: build.beats.length, title: `Beat ${session.beat + 1} of ${build.beats.length} · ${b.title}`, objective: b.objective, ...(session.kind === "drill" && b.hint ? { hint: b.hint } : {}) },
+    beat: { index: session.beat, total: build.beats.length, title: `Beat ${session.beat + 1} of ${build.beats.length} · ${b.title}`, objective: b.objective, ...(session.kind === "drill" && build.hint ? { hint: build.hint } : {}) },
     clock: { minute: session.simMinute, label: clockLabel(build.clockStart.day, build.clockStart.minute, session.simMinute), minutesTotal: build.clockTotal },
     status: session.status,
     lastSeq: session.seq,

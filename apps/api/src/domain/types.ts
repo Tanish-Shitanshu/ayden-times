@@ -165,6 +165,8 @@ export interface RunChecksCtx extends EngineCtx {
 export interface MissionBuild {
   title: string;
   company: string;
+  /** drill hint shown in the objectives card (first-time scaffold) */
+  hint?: string;
   clockStart: { day: string; minute: number }; // minute of day, e.g. 570 = 09:30
   clockTotal: number;
   people: PersonDef[];

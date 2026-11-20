@@ -214,6 +214,7 @@ function build(args: { variantIndex: number; vars: Vars; drill?: DrillDef }): Mi
   return {
     title: drill ? `Drill: ${drill.title}` : "Night shift handover on Ward 4B",
     company: COMPANY,
+    hint: drill?.hint,
     clockStart: { day: "Tue", minute: 19 * 60 + 30 },
     clockTotal: 300,
     people: [

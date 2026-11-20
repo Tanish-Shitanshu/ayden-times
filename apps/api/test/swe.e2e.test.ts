@@ -99,3 +99,35 @@ describe("Software Engineer mission (scripted mode, local sandbox)", () => {
     expect(prog.nextBestDrill).toBeTruthy();
   });
 });
+
+describe("Drills", () => {
+  it("runs a short drill on a different variant with a hint and measures one skill", async () => {
+    const { client } = await setup();
+    const c = client();
+    await c.enroll("software-engineer", { git_hygiene: 5 });
+    // a normal mission first so the drill picks the other variant
+    const first = (await c.call("POST", "/missions", { roleId: "software-engineer", mode: "quick" })).body as MissionState;
+    const d = (await c.call("POST", "/missions", { roleId: "software-engineer", drillId: "swe-drill-commit-hygiene", mode: "quick" })).body as MissionState;
+    expect(d.kind).toBe("drill");
+    expect(d.variantLabel).not.toBe(first.variantLabel.replace(first.seed, d.seed));
+    expect(d.beat.total).toBe(2);
+    let seq = 0;
+    const act = async (b: Record<string, unknown>) => (await c.call("POST", `/missions/${d.id}/act`, { clientSeq: ++seq, ...b })).body as ActResponse;
+    const fam = FAMILIES[d.variantLabel.includes("shipping") ? 1 : 0]!;
+    await act({ kind: "save_file", itemId: "it_src", content: fam.golden });
+    const run = await act({ kind: "run_checks" });
+    expect(run.delta.beat.hint).toBeTruthy();
+    expect(run.delta.canAdvance).toBe(true);
+    await act({ kind: "advance" });
+    const key = (await c.call("GET", `/missions/${d.id}`)).body.items.find((i: { type: string }) => i.type === "ticket").key as string;
+    await act({ kind: "submit_artifact", artifactId: "ar_commit", content: `fix(${fam.module}): apply once (${key})` });
+    const pr = await act({ kind: "submit_artifact", artifactId: "ar_pr", content: "## Why\nCustomers were overcharged because it applied twice.\n## How I tested\nRan checks and added a test.\n## Risks\nLow, tests cover it." });
+    expect(pr.delta.canFinish).toBe(true);
+    const fin = await c.call("POST", `/missions/${d.id}/finish`, {});
+    const rep = (await c.call("GET", `/reports/${fin.body.reportId}`)).body as Report;
+    expect(rep.skills.filter((s) => s.signals.length > 0).map((s) => s.skillId)).toEqual(["git_hygiene"]);
+    expect(rep.skills.find((s) => s.skillId === "git_hygiene")!.state).toBe("strong");
+    const prog = (await c.call("GET", "/me/progress?roleId=software-engineer")).body;
+    expect(prog.skills.find((s: { skillId: string }) => s.skillId === "git_hygiene").history.length).toBe(1);
+  });
+});

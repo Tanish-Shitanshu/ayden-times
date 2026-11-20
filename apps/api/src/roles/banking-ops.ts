@@ -178,6 +178,7 @@ function build(args: { variantIndex: number; vars: Vars; drill?: DrillDef }): Mi
   return {
     title: drill ? `Drill: ${drill.title}` : "A morning on the payments and KYC desk",
     company: COMPANY,
+    hint: drill?.hint,
     clockStart: { day: "Mon", minute: 9 * 60 },
     clockTotal: 360,
     people: [

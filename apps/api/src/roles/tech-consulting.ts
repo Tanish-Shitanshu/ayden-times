@@ -216,6 +216,7 @@ function build(args: { variantIndex: number; vars: Vars; drill?: DrillDef }): Mi
   return {
     title: drill ? `Drill: ${drill.title}` : "Why did FreshCart's margin fall?",
     company: COMPANY,
+    hint: drill?.hint,
     clockStart: { day: "Thu", minute: 9 * 60 },
     clockTotal: 420,
     people: [

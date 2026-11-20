@@ -300,6 +300,7 @@ function build(args: { variantIndex: number; vars: Vars; drill?: DrillDef }): Mi
   return {
     title: drill ? `Drill: ${drill.title}` : `Day 3 at ${COMPANY}: ${f.ticketTitle.toLowerCase()}`,
     company: COMPANY,
+    hint: drill?.hint,
     clockStart: { day: "Wed", minute: 9 * 60 + 30 },
     clockTotal: 480,
     people: [
