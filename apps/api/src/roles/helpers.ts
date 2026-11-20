@@ -46,14 +46,14 @@ export function section(text: string, title: RegExp): string {
   let start = -1;
   for (let i = 0; i < lines.length; i++) {
     const l = lines[i]!;
-    if (/^\s*(#{1,6}\s*|\*\*)?/.test(l) && title.test(l.replace(/^\s*#{1,6}\s*/, "")) && (/^\s*#{1,6}\s/.test(l) || /^\s*\*\*/.test(l) || /:\s*$/.test(l) || /^\s*[A-Za-z ]{2,30}:/.test(l))) {
+    if (/^\s*(#{1,6}\s*|\*\*)?/.test(l) && title.test(l.replace(/^\s*#{1,6}\s*/, "")) && (/^\s*#{1,6}\s/.test(l) || /^\s*\*\*/.test(l) || /:\s*$/.test(l) || /^\s*[A-Za-z ]{1,30}:/.test(l))) {
       start = i;
       break;
     }
   }
   if (start < 0) return "";
   const out: string[] = [];
-  const inline = lines[start]!.replace(/^\s*#{1,6}\s*/, "").replace(/^\*\*.*?\*\*:?\s*/, "").replace(/^[A-Za-z ]{2,30}:\s*/, "");
+  const inline = lines[start]!.replace(/^\s*#{1,6}\s*/, "").replace(/^\*\*.*?\*\*:?\s*/, "").replace(/^[A-Za-z ]{1,30}:\s*/, "");
   if (inline.trim()) out.push(inline.trim());
   for (let i = start + 1; i < lines.length; i++) {
     if (/^\s*#{1,6}\s/.test(lines[i]!) || /^\s*\*\*[^*]+\*\*\s*:?\s*$/.test(lines[i]!)) break;

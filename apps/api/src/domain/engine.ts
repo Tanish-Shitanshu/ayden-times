@@ -195,7 +195,7 @@ async function writeScripted(
     session.tickSub = 0;
     if (se.clockJump) session.simMinute += se.clockJump;
     if (se.itemUpdate) session.itemOverrides[se.itemUpdate.id] = se.itemUpdate;
-    for (const [k, v] of Object.entries(se.setFlags ?? {})) session.flags[k] = v === -1 && /Seq$/.test(k) ? session.seq : v;
+    for (const [k, v] of Object.entries(se.setFlags ?? {})) session.flags[k] = v === -1 && /Seq$/.test(k) ? session.seq : v === -1 && /Min$/.test(k) ? session.simMinute : v;
     const kind = se.kind ?? (se.severity ? "review_comment" : "message");
     const ev: MissionEvent = {
       seq: session.seq,

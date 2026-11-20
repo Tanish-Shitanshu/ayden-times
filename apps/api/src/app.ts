@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import cookie from "@fastify/cookie";
 import fastifyStatic from "@fastify/static";
-import Fastify from "fastify";
+import Fastify, { type FastifyReply, type FastifyRequest } from "fastify";
 import { ZodError } from "zod";
 import { registerRoutes } from "./api/routes.js";
 import { createLlm, type LlmClient } from "./agents/llm.js";
@@ -24,7 +24,7 @@ export async function buildApp(opts: { store?: Store; llm?: LlmClient } = {}) {
   const app = Fastify({ logger: false, trustProxy: true, bodyLimit: 256 * 1024 });
   await app.register(cookie);
 
-  app.addHook("onSend", async (_req, reply) => {
+  app.addHook("onSend", async (_req: FastifyRequest, reply: FastifyReply) => {
     reply.header("x-content-type-options", "nosniff");
     reply.header("referrer-policy", "no-referrer");
     reply.header("x-frame-options", "DENY");
@@ -32,7 +32,7 @@ export async function buildApp(opts: { store?: Store; llm?: LlmClient } = {}) {
     if (_req.url.startsWith("/api/")) reply.header("cache-control", "no-store");
   });
 
-  app.setErrorHandler((err: unknown, _req, reply) => {
+  app.setErrorHandler((err: unknown, _req: FastifyRequest, reply: FastifyReply) => {
     if (err instanceof ApiError) return reply.status(err.status).send({ error: { code: err.code, message: err.message, ...(err.retryAfterMs ? { retryAfterMs: err.retryAfterMs } : {}) } });
     if (err instanceof ZodError) return reply.status(400).send({ error: { code: "validation", message: "That request was not valid.", details: err.issues.slice(0, 5).map((i) => `${i.path.join(".")}: ${i.message}`) } });
     const fe = err as { statusCode?: number; message?: string };
