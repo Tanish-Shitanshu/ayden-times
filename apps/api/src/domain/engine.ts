@@ -17,6 +17,7 @@ import type { LlmClient } from "../agents/llm.js";
 import type { Runner } from "../agents/sandbox.js";
 import { weave } from "../agents/weaver.js";
 import { config } from "../config.js";
+import type { Analytics } from "../infra/analytics.js";
 import type { Store } from "../infra/store.js";
 import { findDrill, findMission, getRole } from "../roles/index.js";
 import { clockLabel } from "../roles/helpers.js";
@@ -38,6 +39,7 @@ export interface Deps {
   store: Store;
   llm: LlmClient;
   runner: Runner;
+  analytics?: Analytics;
 }
 
 const nowIso = () => new Date().toISOString();

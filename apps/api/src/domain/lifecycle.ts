@@ -15,6 +15,7 @@ export async function finishMission(deps: Deps, uid: string, id: string): Promis
   const events = await store.listEvents(session.id, 0);
   const report = await buildReport(deps, { session, build, role, events, user });
   await store.putReport(report);
+  void deps.analytics?.recordCompletion(report);
   session.status = "done";
   session.reportId = report.id;
   await store.putSession(session);

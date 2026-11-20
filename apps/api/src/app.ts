@@ -9,6 +9,8 @@ import { createLlm, type LlmClient } from "./agents/llm.js";
 import { makeRunner } from "./agents/sandbox.js";
 import { config } from "./config.js";
 import { ApiError, type Deps } from "./domain/engine.js";
+import type { Analytics } from "./infra/analytics.js";
+import { BigQueryAnalytics, NoAnalytics } from "./infra/analytics.js";
 import { FirestoreStore } from "./infra/firestore.js";
 import { error as logError } from "./infra/log.js";
 import { MemoryStore, type Store } from "./infra/store.js";
@@ -17,10 +19,11 @@ export function createStore(): Store {
   return config.store === "firestore" ? new FirestoreStore(config.project, config.firestoreDatabase) : new MemoryStore();
 }
 
-export async function buildApp(opts: { store?: Store; llm?: LlmClient } = {}) {
+export async function buildApp(opts: { store?: Store; llm?: LlmClient; analytics?: Analytics } = {}) {
   const store = opts.store ?? createStore();
   const llm = opts.llm ?? createLlm(store);
-  const deps: Deps = { store, llm, runner: makeRunner(llm) };
+  const analytics = opts.analytics ?? (process.env.ANALYTICS === "bigquery" && config.project ? new BigQueryAnalytics(config.project) : new NoAnalytics());
+  const deps: Deps = { store, llm, runner: makeRunner(llm), analytics };
   const app = Fastify({ logger: false, trustProxy: true, bodyLimit: 256 * 1024 });
   await app.register(cookie);
 

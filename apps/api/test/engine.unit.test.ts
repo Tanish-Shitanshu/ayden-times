@@ -289,3 +289,20 @@ describe("API rules", () => {
     expect(s.googleServices.find((x: { name: string }) => x.name === "BigQuery").state).toBe("planned");
   });
 });
+
+describe("analytics rows are anonymous", () => {
+  it("contains no user id, mission id or text", async () => {
+    const { toRows } = await import("../src/infra/analytics.js");
+    const rep = {
+      id: "r1", missionId: "m_secret", roleId: "software-engineer", createdAt: "2026-11-20T00:00:00Z", status: "ready", headline: "private headline", summary: "private summary",
+      skills: [{ skillId: "clarify", label: "L", selfRating: 4, anchorsMet: 2, anchorsTotal: 4, target: 3, state: "developing", confidenceGap: null, signals: [{ id: "a", anchor: "x", met: true, source: "code" }], evidence: [{ eventSeq: 1, quote: "my private words", note: "n", tone: "good", verifiedBySystem: true }] }],
+      keyMoments: [], consequences: [], nextSteps: [], integrity: { judgeModel: "x", mode: "scripted", quotesVerified: 0, quotesRejected: 0, uncertainSkills: [], notes: [] }, privacyNote: "", shareSummary: "",
+      uid: "u_secret", defId: "d", kind: "mission", variantKey: "d:0", traps: [{ id: "t", label: "T", missed: true }], tested: ["clarify"], skillRatios: {},
+    } as unknown as StoredReport;
+    const rows = toRows(rep);
+    expect(rows.length).toBe(1);
+    const text = JSON.stringify(rows);
+    expect(text).not.toMatch(/u_secret|m_secret|private|words/);
+    expect(rows[0]!.trap_missed).toBe(1);
+  });
+});

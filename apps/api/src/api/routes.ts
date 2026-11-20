@@ -321,7 +321,7 @@ export function registerRoutes(app: FastifyInstance, deps: Deps) {
         { name: "Secret Manager", state: process.env.SECRET_SOURCE === "secret-manager" ? "live" : "planned", detail: "Session secret (and the model key in live mode) mounted at runtime" },
         { name: "Cloud Logging", state: onRun ? "live" : "fallback", detail: "Structured logs: model, latency, verdicts. Never prompts or user text" },
         { name: "Antigravity + Agent Skills", state: process.env.ANTIGRAVITY_USED === "1" ? "live" : "planned", detail: "Used to build; standards skills live in the repo (.agents/skills)" },
-        { name: "BigQuery", state: "planned", detail: "Analytics export and Data Analyst role" },
+        { name: "BigQuery", state: deps.analytics?.rowsWritten() ? "live" : "planned", detail: deps.analytics?.rowsWritten() ? `Anonymous skill-pattern rows written (${deps.analytics.rowsWritten()} this instance); no user ids or text` : "Anonymous analytics export (not yet written)" },
         { name: "Sensitive Data Protection", state: "planned", detail: "PII redaction (basic redaction runs today)" },
       ],
       counters,
