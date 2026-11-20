@@ -1,0 +1,21 @@
+.reading { min-height: 60vh; display: grid; place-content: center; justify-items: center; gap: 16px; text-align: center; }
+.reading-lines { height: 24px; position: relative; overflow: hidden; width: 320px; }
+.reading-lines span { position: absolute; inset: 0; animation: rot 6s infinite; opacity: 0; color: var(--text-secondary); }
+.reading-lines span:nth-child(2) { animation-delay: 2s; } .reading-lines span:nth-child(3) { animation-delay: 4s; }
+@keyframes rot { 0% { opacity: 0; transform: translateY(8px); } 6%, 28% { opacity: 1; transform: none; } 34%, 100% { opacity: 0; transform: translateY(-8px); } }
+@media (prefers-reduced-motion: reduce) { .reading-lines span { position: static; opacity: 1; display: block; } .reading-lines { height: auto; } }
+.skill-grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 900px) { .skill-grid { grid-template-columns: 1fr 1fr; align-items: start; } }
+.skill-res { display: flex; flex-direction: column; gap: 12px; }
+.bars { display: grid; grid-template-columns: 92px 1fr 44px; gap: 10px 12px; align-items: center; font-size: 13px; }
+.bars .lbl { color: var(--text-secondary); }
+.bars .val { text-align: right; font-variant-numeric: tabular-nums; color: var(--text-secondary); }
+.sig-list { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-direction: column; gap: 6px; }
+.sig-list li { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
+.quote { margin: 8px 0 0; padding: 10px 14px; border-radius: 12px; background: var(--surface-variant); font-size: 14px; }
+.quote.good { background: var(--success-bg); }
+.quote.miss { background: var(--warning-bg); }
+.quote q { font-style: italic; }
+.debrief-foot { position: sticky; bottom: 0; z-index: 50; background: color-mix(in srgb, var(--bg) 94%, transparent); backdrop-filter: blur(10px); border-top: 1px solid var(--outline); padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); margin-top: 48px; }
+.moment { display: flex; gap: 12px; align-items: flex-start; }
+.next-card { display: flex; flex-direction: column; gap: 8px; }

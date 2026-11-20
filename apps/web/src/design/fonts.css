@@ -1,0 +1,9 @@
+/* Self-hosted Material Symbols Rounded (FILL axis), served from our own origin.
+   font-display: block avoids flashing ligature names while the font loads. */
+@font-face {
+  font-family: "Ayden Symbols";
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url("@fontsource-variable/material-symbols-rounded/files/material-symbols-rounded-latin-fill-normal.woff2") format("woff2-variations"), url("@fontsource-variable/material-symbols-rounded/files/material-symbols-rounded-latin-fill-normal.woff2") format("woff2");
+}
