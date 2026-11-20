@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch --env-file-if-exists=.env.local src/server.ts",
-    "build": "tsup src/server.ts --format esm --target node22 --out-dir dist --clean --noExternal @ayden/contract",
+    "build": "tsup src/server.ts --format esm --target node22 --out-dir dist --clean",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src test"
