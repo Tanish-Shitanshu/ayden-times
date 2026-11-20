@@ -14,10 +14,12 @@ const results = [];
 async function check(name, fn) {
   const t0 = Date.now();
   try {
-    const detail = await fn();
+    const detail = await Promise.race([fn(), new Promise((_, rej) => setTimeout(() => rej(new Error('timed out after 45 s')), 45000))]);
     results.push([name, true, `${Date.now() - t0} ms ${detail ?? ""}`]);
+    console.log(`PASS  ${name}`);
   } catch (e) {
     results.push([name, false, String(e.message ?? e).slice(0, 220)]);
+    console.log(`FAIL  ${name}: ${String(e.message ?? e).slice(0, 160)}`);
   }
 }
 const strings = (v, out = []) => (typeof v === "string" ? out.push(v) : v && typeof v === "object" && Object.values(v).forEach((x) => strings(x, out)), out);
