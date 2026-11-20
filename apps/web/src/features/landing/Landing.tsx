@@ -74,7 +74,7 @@ export default function Landing() {
 
         <section className="section" aria-labelledby="roles-h">
           <div className="section-head row" style={{ flexDirection: "row", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
-            <div className="stack gap-8 grow"><span className="kicker">Five roles, one engine</span><h2 id="roles-h" className="t-hl">Pick a first job to rehearse</h2></div>
+            <div className="stack gap-8 grow"><span className="kicker">Four roles, one engine</span><h2 id="roles-h" className="t-hl">Pick a first job to rehearse</h2></div>
             <Link to="/roles" className="t-bm row gap-4" style={{ fontWeight: 500, minHeight: 44 }}>{t("common.browseRoles")}<Icon name="arrow_forward" className="sm" /></Link>
           </div>
           {roles.error ? <ErrorState error={roles.error} retry={roles.reload} /> : (

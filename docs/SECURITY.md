@@ -14,6 +14,6 @@
 | Logging | structured Cloud Logging: model, latency, verdicts. Never prompts, user text or keys | built |
 | Auth | signed httpOnly SameSite cookie guest sessions; Google sign-in planned | built / planned |
 | Headers | nosniff, no-referrer, frame deny, restrictive permissions policy, no-store on API | built |
-| PII redaction | Sensitive Data Protection planned; today learners are told not to enter personal data | planned |
+| PII redaction | Pattern filter plus Sensitive Data Protection before any text reaches Gemini; learners are also told not to enter personal data | built |
 
 Known limits: guest sessions are not real authentication; scores are formative and not validated against job performance; nurse and banking scenarios are simplified, fictional and not reviewed by a clinician or compliance professional.

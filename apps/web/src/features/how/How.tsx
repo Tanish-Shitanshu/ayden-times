@@ -52,7 +52,7 @@ export default function How() {
           <section id="engine" aria-labelledby="engine-h">
             <h2 id="engine-h" className="t-hm" tabIndex={-1}>Architecture</h2>
             <p className="t-bl t-secondary measure" style={{ marginTop: 8 }}>Every colleague reply is a tool call proposal. The engine checks it against the scenario's hidden truth and persona rules, then accepts or rejects it. You can watch this live in the Engine trace inside any mission.</p>
-            <div className="card" style={{ marginTop: 16, padding: 16, overflowX: "auto" }}><div style={{ minWidth: 640 }}><ArchitectureDiagram /></div></div>
+            <div className="card" style={{ marginTop: 16, padding: 16, overflowX: "auto" }} tabIndex={0} role="region" aria-label="Architecture diagram"><div style={{ minWidth: 640 }}><ArchitectureDiagram /></div></div>
           </section>
 
           <section id="google" aria-labelledby="google-h">

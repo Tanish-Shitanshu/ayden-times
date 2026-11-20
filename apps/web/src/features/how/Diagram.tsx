@@ -18,7 +18,7 @@ export function ArchitectureDiagram() {
     <figure style={{ margin: 0 }}>
       <svg viewBox="0 0 980 470" width="100%" role="img" aria-labelledby="arch-t arch-d" style={{ display: "block", maxWidth: "100%", height: "auto" }}>
         <title id="arch-t">Ayden architecture</title>
-        <desc id="arch-d">The browser talks to one Cloud Run service that hosts the API and the deterministic engine. Gemini colleague agents propose actions, the engine validates them and emits events. Firestore stores sessions, Secret Manager holds the key, Cloud Logging records calls, learner code runs in Google's sandbox. BigQuery is planned.</desc>
+        <desc id="arch-d">The browser talks to one Cloud Run service that hosts the API and the deterministic engine. Gemini colleague agents propose actions, the engine validates them and emits events. Firestore stores sessions, Secret Manager holds the key, Cloud Logging records calls, learner code runs in Google's sandbox. BigQuery receives anonymous skill-pattern rows.</desc>
         <defs>
           <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="context-stroke" /></marker>
         </defs>
@@ -32,7 +32,7 @@ export function ArchitectureDiagram() {
         {box(268, 372, 152, 80, "Firestore", ["Sessions, events,", "reports"])}
         {box(436, 372, 162, 80, "Secret Manager", ["Model API key"])}
         {box(614, 372, 160, 80, "Cloud Logging", ["Structured logs"])}
-        {box(790, 372, 174, 80, "BigQuery", ["Planned: analytics"], { dashed: true })}
+        {box(790, 372, 174, 80, "BigQuery", ["Anonymous skill", "patterns"])}
         {arrow("M186 190 L282 150", "requests", 196, 152)}
         {arrow("M282 236 L192 236", "events", 208, 230, "var(--success)")}
         {arrow("M690 120 L584 236", "proposes", 600, 162, "var(--purple)")}
@@ -44,7 +44,7 @@ export function ArchitectureDiagram() {
         <path d="M344 340 L344 368" stroke="var(--outline-strong)" strokeWidth={1.5} markerEnd="url(#ah)" />
         <path d="M516 340 L516 368" stroke="var(--outline-strong)" strokeWidth={1.5} markerEnd="url(#ah)" />
         <path d="M590 330 L690 368" stroke="var(--outline-strong)" strokeWidth={1.5} markerEnd="url(#ah)" />
-        <path d="M596 336 L860 368" stroke="var(--outline-strong)" strokeWidth={1.5} strokeDasharray="5 4" markerEnd="url(#ah)" />
+        <path d="M596 336 L860 368" stroke="var(--outline-strong)" strokeWidth={1.5} markerEnd="url(#ah)" />
       </svg>
       <figcaption className="t-bm t-secondary" style={{ marginTop: 12, textAlign: "center" }}>The model proposes. The engine decides.</figcaption>
     </figure>

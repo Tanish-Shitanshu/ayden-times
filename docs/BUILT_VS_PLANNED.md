@@ -8,10 +8,12 @@
 - Skill X-ray reports, confidence gap, drills, progress, Ramp Map, evidence-linked badges
 - Consent, export, delete, cohort patterns with a minimum group size of 5
 - Cloud Run + Firestore + Secret Manager + Cloud Logging deployment
+- BigQuery anonymous skill-pattern rows and Sensitive Data Protection redaction before model calls (both on the request path; status page shows live counts)
+- Spot the trap warm-up game (private, no leaderboard)
 
 ## Planned (not built)
 - Data Analyst role with real BigQuery SQL
-- BigQuery analytics export; Sensitive Data Protection redaction; Google sign-in
+- Google sign-in
 - ADK / Agent Runtime orchestration (agents currently use the Gemini Interactions API directly)
 - Gemini Live voice (verbal SBAR), generated images, Lyria sound
 - "Full day" mission mode; company-SOP Role Compiler; Gym API for AI agents; calibration against job performance
