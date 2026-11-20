@@ -27,7 +27,7 @@ export function ArchitectureDiagram() {
         <text x={288} y={70} fontSize="13" fontWeight="500" fill="var(--on-primary-container)">Cloud Run</text>
         {box(288, 86, 290, 92, "API (Fastify)", ["Sessions, missions, reports", "Serves the web app"])}
         {box(288, 200, 290, 122, "Engine (pure TypeScript)", ["Clock, beats, hidden truth", "Validates every tool call", "Signals, checks, consequences"], { accent: "var(--primary)" })}
-        {box(690, 24, 274, 150, "Gemini API", ["Hydrogen: colleague agents", "  (function calling)", "Argon: judge + scenario director", "Embeddings: drill matching"], { accent: "var(--purple)" })}
+        {box(690, 24, 274, 150, "Gemini API", ["Colleague agents", "  (function calling)", "Judge + scenario weaver", "  (structured output)", "Embeddings + code execution"], { accent: "var(--purple)" })}
         {box(690, 196, 274, 74, "Google code sandbox", ["Runs learner code and tests"])}
         {box(268, 372, 152, 80, "Firestore", ["Sessions, events,", "reports"])}
         {box(436, 372, 162, 80, "Secret Manager", ["Model API key"])}

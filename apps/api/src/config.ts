@@ -19,10 +19,10 @@ export const config = {
   llmMode: (env.LLM_MODE ?? "scripted") as LlmMode,
   geminiKey: env.GEMINI_API_KEY ?? "",
   models: {
-    agent: env.MODEL_AGENT ?? "gemini-4-hydrogen",
-    reason: env.MODEL_REASON ?? "gemini-4-argon",
+    agent: env.MODEL_AGENT ?? "gemini-3.5-flash-lite",
+    reason: env.MODEL_REASON ?? "gemini-3.1-flash-lite",
     embed: env.MODEL_EMBED ?? "gemini-embedding-2",
-    tester: env.MODEL_TESTER ?? "gemini-4-hydrogen",
+    tester: env.MODEL_TESTER ?? "gemini-3.1-flash-lite",
   },
   store: (env.STORE ?? "memory") as "memory" | "firestore",
   project: env.GOOGLE_CLOUD_PROJECT ?? "",

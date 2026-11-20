@@ -1,7 +1,7 @@
 import type { WorkItem } from "@ayden/contract";
 import { int, pick, rng, said } from "../domain/text.js";
 import type { AnchorDef, DrillDef, EngineCtx, MissionBuild, MissionDef, RolePack, ScriptedEvent, Vars } from "../domain/types.js";
-import { hit, person, say, section, sys, trapFrom } from "./helpers.js";
+import { AGENT_LABEL, hit, person, say, section, sys, trapFrom } from "./helpers.js";
 
 const ROLE = "nurse" as const;
 const COMPANY = "St. Anne's General Hospital (fictional)";
@@ -329,10 +329,10 @@ export const nurse: RolePack = {
   skills: SKILLS,
   anchors: ANCHORS,
   cast: [
-    { id: "meera_t", name: "Sr. Meera Thomas", title: "Outgoing nurse", kind: "agent", modelLabel: "Gemini 4 Hydrogen", blurb: "Hands over. Shares what is at risk if you ask directly." },
-    { id: "khan", name: "Dr Sameer Khan", title: "On-call doctor", kind: "agent", modelLabel: "Gemini 4 Hydrogen", blurb: "Busy. Wants a structured SBAR with exact observations." },
-    { id: "lakshmi", name: "Lakshmi Pillai", title: "Charge Nurse", kind: "agent", modelLabel: "Gemini 4 Hydrogen", blurb: "Sometimes careless with words. Expects you to check the chart." },
-    { id: "relative", name: "Visitor", title: "Visitor", kind: "agent", modelLabel: "Gemini 4 Hydrogen", blurb: "Asks about a patient who is not their relative." },
+    { id: "meera_t", name: "Sr. Meera Thomas", title: "Outgoing nurse", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Hands over. Shares what is at risk if you ask directly." },
+    { id: "khan", name: "Dr Sameer Khan", title: "On-call doctor", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Busy. Wants a structured SBAR with exact observations." },
+    { id: "lakshmi", name: "Lakshmi Pillai", title: "Charge Nurse", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Sometimes careless with words. Expects you to check the chart." },
+    { id: "relative", name: "Visitor", title: "Visitor", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Asks about a patient who is not their relative." },
   ],
   rampMap: [
     { id: "nurse-orient", typicalWeek: 1, title: "Practise taking handover and seeing the sickest first", description: "Orientation week: handover and prioritising.", skillIds: ["prioritise"], coveredBy: { kind: "mission", id: MISSION.id }, requires: ["prioritise"] },

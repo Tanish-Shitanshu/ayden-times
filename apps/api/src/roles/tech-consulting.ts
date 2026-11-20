@@ -1,7 +1,7 @@
 import type { WorkItem } from "@ayden/contract";
 import { firstSentence, int, pick, rng, said, wordCount } from "../domain/text.js";
 import type { AnchorDef, DrillDef, EngineCtx, MissionBuild, MissionDef, RolePack, ScriptedEvent, Vars } from "../domain/types.js";
-import { hit, person, say, sys, trapFrom } from "./helpers.js";
+import { AGENT_LABEL, hit, person, say, sys, trapFrom } from "./helpers.js";
 
 const ROLE = "tech-consulting" as const;
 const COMPANY = "Northbridge Advisory (fictional)";
@@ -313,10 +313,10 @@ export const techConsulting: RolePack = {
   skills: SKILLS,
   anchors: ANCHORS,
   cast: [
-    { id: "rhea", name: "Rhea Kulkarni", title: "Engagement Manager", kind: "agent", modelLabel: "Gemini 4 Hydrogen", blurb: "Wants the answer first, short, with numbers that tie." },
-    { id: "imran", name: "Imran Qureshi", title: "Analyst teammate", kind: "agent", modelLabel: "Gemini 4 Hydrogen", blurb: "Shares data and spots a discrepancy." },
-    { id: "sethi", name: "Arvind Sethi", title: "Client CFO", kind: "agent", modelLabel: "Gemini 4 Hydrogen", blurb: "Jumps to supplier prices and asks for extra work." },
-    { id: "partner", name: "Dev Malhotra", title: "Partner", kind: "agent", modelLabel: "Gemini 4 Hydrogen", blurb: "Wants the headline in one sentence." },
+    { id: "rhea", name: "Rhea Kulkarni", title: "Engagement Manager", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Wants the answer first, short, with numbers that tie." },
+    { id: "imran", name: "Imran Qureshi", title: "Analyst teammate", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Shares data and spots a discrepancy." },
+    { id: "sethi", name: "Arvind Sethi", title: "Client CFO", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Jumps to supplier prices and asks for extra work." },
+    { id: "partner", name: "Dev Malhotra", title: "Partner", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Wants the headline in one sentence." },
   ],
   rampMap: [
     { id: "cons-scope", typicalWeek: 1, title: "Understand the client and the scope", description: "Know what is in and out of scope.", skillIds: ["scope_mgmt"], coveredBy: { kind: "mission", id: MISSION.id }, requires: ["scope_mgmt"] },

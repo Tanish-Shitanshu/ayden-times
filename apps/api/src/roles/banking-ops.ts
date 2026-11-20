@@ -1,7 +1,7 @@
 import type { WorkItem } from "@ayden/contract";
 import { int, pick, rng, said } from "../domain/text.js";
 import type { AnchorDef, DrillDef, EngineCtx, MissionBuild, MissionDef, RolePack, ScriptedEvent, Vars } from "../domain/types.js";
-import { hit, person, say, sys, trapFrom } from "./helpers.js";
+import { AGENT_LABEL, hit, person, say, sys, trapFrom } from "./helpers.js";
 
 const ROLE = "banking-ops" as const;
 const COMPANY = "Kestrel Bank (fictional)";
@@ -293,10 +293,10 @@ export const bankingOps: RolePack = {
   skills: SKILLS,
   anchors: ANCHORS,
   cast: [
-    { id: "karan", name: "Karan Malhotra", title: "Team Lead", kind: "agent", modelLabel: "Gemini 4 Hydrogen", blurb: "Throughput first. Asks you to click release on your own payment." },
-    { id: "ananya", name: "Ananya Iyer", title: "Compliance Officer", kind: "agent", modelLabel: "Gemini 4 Hydrogen", blurb: "Strict, helpful when escalations are clean." },
-    { id: "vikram", name: "Vikram Desai", title: "Relationship Manager", kind: "agent", modelLabel: "Gemini 4 Hydrogen", blurb: "Wants a VIP client's payment released." },
-    { id: "caller", name: "Mr Chopra", title: "Customer (phone)", kind: "agent", modelLabel: "Gemini 4 Hydrogen", blurb: "Angry about the delay and asks why." },
+    { id: "karan", name: "Karan Malhotra", title: "Team Lead", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Throughput first. Asks you to click release on your own payment." },
+    { id: "ananya", name: "Ananya Iyer", title: "Compliance Officer", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Strict, helpful when escalations are clean." },
+    { id: "vikram", name: "Vikram Desai", title: "Relationship Manager", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Wants a VIP client's payment released." },
+    { id: "caller", name: "Mr Chopra", title: "Customer (phone)", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Angry about the delay and asks why." },
   ],
   rampMap: [
     { id: "bank-policy", typicalWeek: 1, title: "Learn the policy and the queue tools", description: "Read the desk policy and plan your queue.", skillIds: ["prioritise_queue"], coveredBy: { kind: "mission", id: MISSION.id }, requires: ["prioritise_queue"] },

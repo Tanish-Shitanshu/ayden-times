@@ -1,6 +1,10 @@
 import type { MissionEvent } from "@ayden/contract";
+import { config } from "../config.js";
 import { quoteOf } from "../domain/text.js";
 import type { AnchorDef, AnchorHit, PersonDef, ScriptedEvent, TrapDef } from "../domain/types.js";
+
+/** What the UI shows as a colleague's model: the real model id in live mode, never a hard-coded name. */
+export const AGENT_LABEL = config.llmMode === "live" ? config.models.agent : "Scripted colleague";
 
 export const person = (
   id: string,
@@ -9,7 +13,7 @@ export const person = (
   hue: number,
   persona: string,
   defaultLines: string[],
-  modelLabel = "Gemini 4 Hydrogen",
+  modelLabel = AGENT_LABEL,
 ): PersonDef => ({ id, name, title, hue, kind: "agent", persona, defaultLines, modelLabel });
 
 export const say = (from: string, body: string, extra: Partial<ScriptedEvent> = {}): ScriptedEvent => ({

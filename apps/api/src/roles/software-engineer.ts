@@ -1,7 +1,7 @@
 import type { CheckResult, WorkItem } from "@ayden/contract";
 import { diffSize, int, pick, rng, said } from "../domain/text.js";
 import type { AnchorDef, DrillDef, EngineCtx, MissionBuild, MissionDef, RolePack, RunChecksCtx, ScriptedEvent, Vars } from "../domain/types.js";
-import { hit, person, say, section, sys, trapFrom } from "./helpers.js";
+import { AGENT_LABEL, hit, person, say, section, sys, trapFrom } from "./helpers.js";
 import { FAMILIES, buildProgram, countTests, parseResults, staticChecks, type SweFamily } from "./swe-code.js";
 
 const ROLE = "software-engineer" as const;
@@ -424,11 +424,11 @@ export const softwareEngineer: RolePack = {
   skills: SKILLS,
   anchors: ANCHORS,
   cast: [
-    { id: "priya", name: "Priya Nair", title: "Engineering Manager", kind: "agent", modelLabel: "Gemini 4 Hydrogen", blurb: "Wants it shipped by Friday. Under pressure she says 'just merge it'." },
-    { id: "arjun", name: "Arjun Rao", title: "Senior Engineer (reviewer)", kind: "agent", modelLabel: "Gemini 4 Hydrogen", blurb: "Fair but strict. Gives one valid blocker and one over-engineering suggestion." },
-    { id: "neha", name: "Neha Shah", title: "QA Engineer", kind: "agent", modelLabel: "Gemini 4 Hydrogen + code execution", blurb: "Runs hidden edge-case checks. Files a bug if you miss one." },
-    { id: "rohan", name: "Rohan Mehta", title: "Buddy, one year in", kind: "agent", modelLabel: "Gemini 4 Hydrogen", blurb: "Friendly. Suggests a tempting shortcut." },
-    { id: "meera", name: "Meera Kapoor", title: "Head of Customer Operations", kind: "agent", modelLabel: "Gemini 4 Hydrogen", blurb: "Senior stakeholder who asks for extra scope." },
+    { id: "priya", name: "Priya Nair", title: "Engineering Manager", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Wants it shipped by Friday. Under pressure she says 'just merge it'." },
+    { id: "arjun", name: "Arjun Rao", title: "Senior Engineer (reviewer)", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Fair but strict. Gives one valid blocker and one over-engineering suggestion." },
+    { id: "neha", name: "Neha Shah", title: "QA Engineer", kind: "agent", modelLabel: `${AGENT_LABEL} + code execution`, blurb: "Runs hidden edge-case checks. Files a bug if you miss one." },
+    { id: "rohan", name: "Rohan Mehta", title: "Buddy, one year in", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Friendly. Suggests a tempting shortcut." },
+    { id: "meera", name: "Meera Kapoor", title: "Head of Customer Operations", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Senior stakeholder who asks for extra scope." },
   ],
   rampMap: [
     { id: "swe-env", typicalWeek: 1, title: "Read the team guide and ask before you build", description: "Typical first-week goal: understand how the team works and clarify tasks.", skillIds: ["clarify"], coveredBy: { kind: "mission", id: MISSION.id }, requires: ["clarify"] },
