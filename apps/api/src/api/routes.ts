@@ -323,7 +323,7 @@ export function registerRoutes(app: FastifyInstance, deps: Deps) {
         { name: "Cloud Logging", state: onRun ? "live" : "fallback", detail: "Structured logs: model, latency, verdicts. Never prompts or user text" },
         { name: "Antigravity + Agent Skills", state: process.env.ANTIGRAVITY_USED === "1" ? "live" : "planned", detail: "Used to build; standards skills live in the repo (.agents/skills)" },
         { name: "BigQuery", state: bqRows > 0 ? "live" : "planned", detail: bqRows > 0 ? `Anonymous skill-pattern rows in BigQuery (${bqRows} so far); no user ids or text` : "Anonymous analytics export (not yet written)" },
-        { name: "Sensitive Data Protection", state: "planned", detail: "PII redaction (basic redaction runs today)" },
+        { name: "Sensitive Data Protection", state: counters.redactions > 0 ? "live" : "planned", detail: counters.redactions > 0 ? `Personal data is redacted before text reaches Gemini (${counters.redactions} calls so far)` : "Personal-data redaction before model calls (basic redaction runs today)" },
       ],
       counters,
     };

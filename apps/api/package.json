@@ -14,6 +14,7 @@
     "@fastify/cookie": "^11.1.5",
     "@fastify/static": "^10.1.12",
     "@google-cloud/bigquery": "^9.6.1",
+    "@google-cloud/dlp": "^7.2.0",
     "@google-cloud/firestore": "^9.4.1",
     "@google/genai": "^3.6.1",
     "fastify": "^5.12.8",

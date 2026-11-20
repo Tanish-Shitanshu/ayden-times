@@ -306,3 +306,12 @@ describe("analytics rows are anonymous", () => {
     expect(rows[0]!.trap_missed).toBe(1);
   });
 });
+
+describe("redaction before model calls", () => {
+  it("removes emails, phones, card and ID numbers", async () => {
+    const { basicRedact } = await import("../src/infra/redact.js");
+    const out = basicRedact("mail me at asha.k@example.com or 9876543210, card 4111 1111 1111 1111, aadhaar 1234 5678 9012, pan ABCDE1234F");
+    expect(out).not.toMatch(/example\.com|9876543210|4111|1234 5678|ABCDE1234F/);
+    expect(out).toContain("[email]");
+  });
+});
