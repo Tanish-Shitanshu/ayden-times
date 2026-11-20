@@ -11,3 +11,4 @@ coverage/
 *.pem
 *.key
 service-account*.json
+*.tsbuildinfo
