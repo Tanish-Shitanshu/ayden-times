@@ -6,6 +6,8 @@ Ayden is a workplace rehearsal platform. A new graduate picks a role and works a
 
 > The model proposes. The engine decides. Every AI action is validated against state and knowledge boundaries and shown in a visible Engine Trace.
 
+**Live:** https://ayden-app-388558128884.asia-south1.run.app (web app and API on one origin; `/api/v1/system/status` shows what is live).
+
 ## What is built
 
 | Area | State |
@@ -34,6 +36,8 @@ BASE_URL=http://localhost:8080 npm run smoke
 
 Live Gemini mode: set `LLM_MODE=live` and `GEMINI_API_KEY` in `apps/api/.env.local`, then run
 `node --env-file=apps/api/.env.local scripts/smoke-gemini.mjs` to verify every model call Ayden uses.
+
+Web app: `apps/web` (Vite + React). `npm run build` builds it and the API; `npm start` serves both on port 8080. See [docs/INTEGRATION_NOTES.md](docs/INTEGRATION_NOTES.md) for models, deploy and Windows notes.
 
 ## Layout
 

@@ -89,8 +89,16 @@ const assert = (c, m) => { if (!c) throw new Error(m); };
     await page.waitForTimeout(500); assert(!(await page.locator('.work-body .cm-content').innerText()).includes('# scratch'), 'not reset');
   });
   await row(21, 'Run checks (up to ~25 s) → results, hidden masked', async () => {
-    await page.locator('.work-body .cm-content').click(); await page.keyboard.press('Control+a'); await page.keyboard.press('Delete');
-    await page.keyboard.insertText('"""Order pricing."""\n\n\ndef line_total(unit_price: float, quantity: int) -> float:\n"""Price of one line."""\nif quantity <= 0 or unit_price < 0:\nraise ValueError("invalid line")\nreturn unit_price * quantity\n\n\ndef total(lines, discount_rate: float = 0.0) -> float:\n"""Order total, discount once."""\nif not 0 <= discount_rate < 1:\nraise ValueError("invalid discount")\nreturn round(sum(line_total(p, q) for p, q in lines) * (1 - discount_rate), 2)\n');
+    const GOLD = require('./gold.cjs');
+    await page.evaluate(async (gold) => {
+      const id = location.pathname.split('/').pop();
+      const m = await (await fetch('/api/v1/missions/' + id)).json();
+      const mod = m.items.some((x) => x.path === 'src/shipping.py') ? 'shipping' : 'pricing';
+      const key = 'ayden_cseq_' + id; const seq = Number(localStorage.getItem(key) || 0) + 1; localStorage.setItem(key, String(seq));
+      const r = await fetch('/api/v1/missions/' + id + '/act', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ clientSeq: seq, kind: 'save_file', itemId: 'it_src', content: gold[mod] }) });
+      if (!r.ok) throw new Error('save_file failed ' + r.status);
+    }, GOLD);
+    await page.reload(); await page.locator('.ev-msg').first().waitFor(); await openItem('.py');
     await page.locator('.file-toolbar').getByRole('button', { name: 'Run checks' }).click();
     await page.locator('.check-list li').first().waitFor({ timeout: 40000 });
     const names = await page.locator('.check-list li').allInnerTexts();
