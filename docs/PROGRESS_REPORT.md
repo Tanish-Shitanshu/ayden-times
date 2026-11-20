@@ -39,6 +39,8 @@ Only one API key is needed: a free Gemini key from Google AI Studio. Everything 
 - A 402 "prepayment credits depleted" on a free key means the key's project has prepaid billing with no balance. Use a key from a project without billing.
 - **Rate limits are the main demo risk.** Heavy testing (the QA matrix) pushed the live service into scripted fallback (the circuit breaker opens for about a minute after repeated failures). Do not run big tests right before the demo.
 
+**Incident, 21 Nov:** the live service silently went to `LLM_MODE=scripted` (revision `00010`, not deployed by the author of this report) and showed scripted replies while the key was fine. It was set back to `live` (revision `00011`). If you change service env vars, check `/api/v1/system/status` says `"runtime":"live"` afterwards, and do not set `LLM_MODE=scripted` before the demo.
+
 ## 4. Test and QA results
 
 | Check | Result |
