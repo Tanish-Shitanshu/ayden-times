@@ -106,6 +106,7 @@ export class GeminiLlm implements LlmClient {
     const res = await this.guarded("structured", args.timeoutMs ?? 40_000, () =>
       (this.ai as any).interactions.create({
         model: args.model,
+        store: false,
         input: args.input,
         ...(args.system ? { system_instruction: args.system } : {}),
         response_format: { type: "text", mime_type: "application/json", schema: args.schema },
@@ -120,6 +121,7 @@ export class GeminiLlm implements LlmClient {
     const res = await this.guarded("toolCall", args.timeoutMs ?? 20_000, () =>
       (this.ai as any).interactions.create({
         model: args.model,
+        store: false,
         input: args.input,
         system_instruction: args.system,
         tools: args.tools.map((t) => ({ type: "function", name: t.name, description: t.description, parameters: t.parameters })),
@@ -147,7 +149,7 @@ export class GeminiLlm implements LlmClient {
       program +
       "\n```";
     const res = await this.guarded("exec", timeoutMs, () =>
-      (this.ai as any).interactions.create({ model: config.models.tester, input: prompt, tools: [{ type: "code_execution" }] }),
+      (this.ai as any).interactions.create({ model: config.models.tester, store: false, input: prompt, tools: [{ type: "code_execution" }] }),
     );
     const steps: any[] = (res as any).steps ?? [];
     // Prefer sandbox output steps over model prose.

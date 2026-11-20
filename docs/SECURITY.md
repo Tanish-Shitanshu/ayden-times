@@ -6,6 +6,7 @@
 | Least privilege | Dedicated service account `ayden-run`: Firestore user, Secret accessor, Logging writer | built |
 | Untrusted input | learner text in delimited fields; replies only via validated tools; ten injection tests; zod validation on every request | built |
 | Code execution | learner code only in Google's sandbox, never on our host; local runner refused in production | built |
+| Model data retention | Gemini calls set `store: false` so interactions are not retained for state; no prompt text is logged | built |
 | Consent | 18+ and "store my work" required before any mission; optional sharing of anonymous patterns | built |
 | Data rights | `GET /me/export`, `DELETE /me` remove everything for a user (sessions, events, traces, reports, owned cohorts) | built |
 | Privacy tiers | learner owns the report; cohort owners get only aggregates for groups of 5 or more; no per-person scores to anyone; no leaderboards | built |

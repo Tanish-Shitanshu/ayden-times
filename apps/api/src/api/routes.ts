@@ -318,7 +318,7 @@ export function registerRoutes(app: FastifyInstance, deps: Deps) {
         { name: "Gemini code execution", state: live && config.sandbox === "gemini" ? "live" : "fallback", detail: "Learner code runs in Google's sandbox, never on our server" },
         { name: "Cloud Run", state: onRun ? "live" : "fallback", detail: onRun ? "Stateless container serving web and API" : "Running locally" },
         { name: "Firestore", state: store.kind === "firestore" ? "live" : "fallback", detail: store.kind === "firestore" ? "Sessions, events, reports and cohorts" : "In-memory store (local development)" },
-        { name: "Secret Manager", state: process.env.SECRET_SOURCE === "secret-manager" ? "live" : "planned", detail: "Model key mounted at runtime" },
+        { name: "Secret Manager", state: process.env.SECRET_SOURCE === "secret-manager" ? "live" : "planned", detail: "Session secret (and the model key in live mode) mounted at runtime" },
         { name: "Cloud Logging", state: onRun ? "live" : "fallback", detail: "Structured logs: model, latency, verdicts. Never prompts or user text" },
         { name: "Antigravity + Agent Skills", state: process.env.ANTIGRAVITY_USED === "1" ? "live" : "planned", detail: "Used to build; standards skills live in the repo (.agents/skills)" },
         { name: "BigQuery", state: "planned", detail: "Analytics export and Data Analyst role" },
