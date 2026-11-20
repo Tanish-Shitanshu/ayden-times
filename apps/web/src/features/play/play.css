@@ -1,0 +1,21 @@
+.play-card { max-width: 720px; padding: 20px; }
+.play-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.play-score { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; font-weight: 500; color: var(--primary); }
+.play-timer { height: 6px; border-radius: 3px; background: var(--surface-variant); margin-top: 12px; overflow: hidden; }
+.play-timer > div { height: 100%; background: var(--primary); transition: width 1s linear; }
+.play-timer > div.low { background: var(--error); }
+.play-scene { margin: 4px 0 16px; line-height: 1.4; }
+.play-options { display: grid; gap: 10px; }
+.play-opt { display: flex; align-items: center; gap: 12px; text-align: left; padding: 14px 16px; min-height: 56px; border: 1px solid var(--outline); border-radius: 14px; background: var(--surface); color: var(--text); font: inherit; cursor: pointer; transition: border-color .15s, background .15s, transform .15s; }
+.play-opt:hover:not([aria-disabled]) { border-color: var(--primary); background: var(--primary-container); }
+.play-opt:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.play-opt[aria-disabled] { cursor: default; }
+.play-opt.right { border-color: var(--success); background: var(--success-bg); }
+.play-opt.wrong { border-color: var(--error); background: var(--error-bg); }
+.play-opt.dim { opacity: .55; }
+.play-why { margin-top: 16px; padding: 14px 16px; border-radius: 14px; }
+.play-why.ok { background: var(--success-bg); color: var(--success-text); }
+.play-why.no { background: var(--warning-bg); color: var(--warning-text); }
+.play-end { text-align: center; display: grid; gap: 12px; justify-items: center; padding: 32px 20px; }
+.play-trophy { font-size: 56px; width: 56px; height: 56px; color: var(--primary); }
+@media (prefers-reduced-motion: reduce) { .play-opt, .play-timer > div { transition: none; } }

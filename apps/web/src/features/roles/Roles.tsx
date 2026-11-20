@@ -2,7 +2,7 @@ import { api } from "../../api/client";
 import { useAsync } from "../../lib/hooks";
 import { useT } from "../../lib/i18n";
 import { useApp } from "../../app/store";
-import { ErrorState, Icon, SlowNote } from "../../design/components";
+import { ErrorState, Icon, LinkButton, SlowNote } from "../../design/components";
 import { RoleCard, RoleCardSkeleton } from "./RoleCard";
 import type { Progress } from "../../contract";
 
@@ -37,6 +37,11 @@ export default function Roles() {
           <SlowNote active={roles.loading} />
         </>
       )}
+      <div className="card row gap-16 wrap" style={{ marginTop: 24, padding: 16, alignItems: "center" }}>
+        <Icon name="sports_esports" className="lg" />
+        <div style={{ flex: 1, minWidth: 200 }}><div className="t-tm">Warm up: Spot the trap</div><div className="t-bm t-secondary">Six quick workplace moments in about a minute. Just you versus you.</div></div>
+        <LinkButton to="/play" variant="tonal" icon="play_arrow">Play</LinkButton>
+      </div>
       <p className="t-bm t-secondary row gap-8" style={{ marginTop: 32 }}><Icon name="person" className="sm" />{t("roles.footer")}</p>
     </div>
   );
