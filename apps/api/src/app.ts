@@ -13,6 +13,7 @@ import type { Analytics } from "./infra/analytics.js";
 import { BigQueryAnalytics, NoAnalytics } from "./infra/analytics.js";
 import { FirestoreStore } from "./infra/firestore.js";
 import { error as logError } from "./infra/log.js";
+import { setRedactStore } from "./infra/redact.js";
 import { MemoryStore, type Store } from "./infra/store.js";
 
 export function createStore(): Store {
@@ -21,6 +22,7 @@ export function createStore(): Store {
 
 export async function buildApp(opts: { store?: Store; llm?: LlmClient; analytics?: Analytics } = {}) {
   const store = opts.store ?? createStore();
+  setRedactStore(store);
   const llm = opts.llm ?? createLlm(store);
   const analytics = opts.analytics ?? (process.env.ANALYTICS === "bigquery" && config.project ? new BigQueryAnalytics(config.project) : new NoAnalytics());
   const deps: Deps = { store, llm, runner: makeRunner(llm), analytics };

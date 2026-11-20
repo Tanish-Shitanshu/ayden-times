@@ -17,6 +17,10 @@ export function basicRedact(text: string): string {
 }
 
 let client: DlpServiceClient | null = null;
+let counterStore: Store | undefined;
+export const setRedactStore = (s: Store) => {
+  counterStore = s;
+};
 
 /** Redact personal data before text is sent to Gemini: regex baseline, then Google Sensitive Data Protection (when DLP=on). */
 export async function redact(text: string, store?: Store): Promise<string> {
@@ -31,7 +35,7 @@ export async function redact(text: string, store?: Store): Promise<string> {
       deidentifyConfig: { infoTypeTransformations: { transformations: [{ primitiveTransformation: { replaceWithInfoTypeConfig: {} } }] } },
       item: { value: base },
     });
-    void store?.incr("redactions");
+    void (store ?? counterStore)?.incr("redactions");
     return res.item?.value ?? base;
   } catch (e) {
     warn("sensitive data protection call failed; regex redaction used", { error: String((e as Error).message).slice(0, 120) });
