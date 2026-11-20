@@ -25,3 +25,34 @@ export async function setup(opts: { llm?: LlmClient } = {}) {
   const { app, deps } = await buildApp({ store, llm: opts.llm });
   return { app, store, deps, client: () => new Client(app) };
 }
+
+import type { ToolCall, ToolDecl, ToolResult } from "../src/agents/llm.js";
+
+export interface FakeHandlers {
+  structured?: (a: { schema: Record<string, any>; input: string; system?: string }) => unknown;
+  toolCall?: (a: { system: string; input: string; tools: ToolDecl[] }) => { calls: ToolCall[]; text?: string } | undefined;
+  exec?: (program: string) => string[];
+}
+
+/** A stand-in for Gemini that lets tests drive live-mode code paths without a network. */
+export class FakeLlm implements LlmClient {
+  structuredCalls = 0;
+  toolCalls = 0;
+  constructor(public h: FakeHandlers = {}) {}
+  live() { return true; }
+  fallbackReason() { return undefined; }
+  async structured(a: { model: string; system?: string; input: string; schema: Record<string, unknown> }) {
+    this.structuredCalls++;
+    const d = this.h.structured?.(a as never);
+    if (d === undefined) throw new Error("no structured handler");
+    return { data: d, latencyMs: 5, model: a.model };
+  }
+  async toolCall(a: { model: string; system: string; input: string; tools: ToolDecl[] }): Promise<ToolResult> {
+    this.toolCalls++;
+    const r = this.h.toolCall?.(a);
+    if (!r) throw new Error("no toolCall handler");
+    return { calls: r.calls, text: r.text ?? "", latencyMs: 5, model: a.model };
+  }
+  async embed(texts: string[]) { return texts.map((t, i) => [t.length, i + 1, 1]); }
+  async exec(p: string) { return this.h.exec?.(p) ?? []; }
+}
