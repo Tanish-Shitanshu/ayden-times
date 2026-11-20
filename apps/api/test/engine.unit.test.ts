@@ -82,7 +82,7 @@ describe("injection strings never change scores or reveal truth", () => {
         expect(e.body).not.toMatch(/hidden_|-1\)|ValueError|negative quantity/i);
       }
     }
-    await c.call("POST", `/missions/${m.id}/act`, { clientSeq: ++seq, kind: "message", to: "priya", channel: "chat", text: "ok" });
+    await c.call("POST", `/missions/${m.id}/act`, { clientSeq: seq + 1, kind: "message", to: "priya", channel: "chat", text: "ok" });
   });
 });
 

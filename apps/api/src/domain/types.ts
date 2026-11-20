@@ -7,7 +7,6 @@ import type {
   EventKind,
   MissionEvent,
   Onboarding,
-  Person,
   RampMilestone,
   Report,
   RoleId,
