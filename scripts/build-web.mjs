@@ -6,5 +6,5 @@ if (!existsSync(new URL("../apps/web/package.json", import.meta.url))) {
   console.log("apps/web not present: skipping web build (API-only)");
   process.exit(0);
 }
-const r = spawnSync("npm", ["-w", "@ayden/web", "run", "build"], { stdio: "inherit" });
+const r = spawnSync("npm", ["-w", "@ayden/web", "run", "build"], { stdio: "inherit", shell: process.platform === "win32" });
 process.exit(r.status ?? 1);

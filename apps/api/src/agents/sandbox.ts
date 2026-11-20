@@ -28,7 +28,7 @@ async function runLocalPython(program: string, timeoutMs: number): Promise<strin
     const file = join(dir, "main.py");
     await writeFile(file, program);
     return await new Promise<string | null>((resolve) => {
-      const p = spawn("python3", ["-I", file], { cwd: dir, env: {}, stdio: ["ignore", "pipe", "pipe"] });
+      const p = spawn(process.platform === "win32" ? "python" : "python3", ["-I", file], { cwd: dir, env: {}, stdio: ["ignore", "pipe", "pipe"] });
       let out = "";
       const t = setTimeout(() => p.kill("SIGKILL"), timeoutMs);
       p.stdout.on("data", (d) => (out += d));
