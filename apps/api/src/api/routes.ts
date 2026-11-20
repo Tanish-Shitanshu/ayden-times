@@ -300,6 +300,7 @@ export function registerRoutes(app: FastifyInstance, deps: Deps) {
 
   app.get("/system/status", async (): Promise<SystemStatus> => {
     const counters = await store.getCounters();
+    const bqRows = (await deps.analytics?.totalRows?.()) ?? deps.analytics?.rowsWritten() ?? 0;
     const live = llm.live();
     const onRun = !!process.env.K_SERVICE;
     return {
@@ -321,7 +322,7 @@ export function registerRoutes(app: FastifyInstance, deps: Deps) {
         { name: "Secret Manager", state: process.env.SECRET_SOURCE === "secret-manager" ? "live" : "planned", detail: "Session secret (and the model key in live mode) mounted at runtime" },
         { name: "Cloud Logging", state: onRun ? "live" : "fallback", detail: "Structured logs: model, latency, verdicts. Never prompts or user text" },
         { name: "Antigravity + Agent Skills", state: process.env.ANTIGRAVITY_USED === "1" ? "live" : "planned", detail: "Used to build; standards skills live in the repo (.agents/skills)" },
-        { name: "BigQuery", state: deps.analytics?.rowsWritten() ? "live" : "planned", detail: deps.analytics?.rowsWritten() ? `Anonymous skill-pattern rows written (${deps.analytics.rowsWritten()} this instance); no user ids or text` : "Anonymous analytics export (not yet written)" },
+        { name: "BigQuery", state: bqRows > 0 ? "live" : "planned", detail: bqRows > 0 ? `Anonymous skill-pattern rows in BigQuery (${bqRows} so far); no user ids or text` : "Anonymous analytics export (not yet written)" },
         { name: "Sensitive Data Protection", state: "planned", detail: "PII redaction (basic redaction runs today)" },
       ],
       counters,

@@ -36,6 +36,8 @@ export interface Analytics {
   recordCompletion(r: StoredReport): Promise<void>;
   rowsWritten(): number;
   enabled(): boolean;
+  /** total rows in the table (cached ~60 s); null if unknown */
+  totalRows?(): Promise<number | null>;
 }
 
 export class BigQueryAnalytics implements Analytics {
@@ -49,6 +51,17 @@ export class BigQueryAnalytics implements Analytics {
   }
   rowsWritten() {
     return this.written;
+  }
+  private cache: { at: number; n: number | null } = { at: 0, n: null };
+  async totalRows(): Promise<number | null> {
+    if (Date.now() - this.cache.at < 60_000) return this.cache.n;
+    try {
+      const [res] = await this.bq.query({ query: `SELECT COUNT(*) AS n FROM \`${this.project}.${this.dataset}.${this.table}\``, location: "asia-south1" });
+      this.cache = { at: Date.now(), n: Number((res[0] as { n: number }).n) };
+    } catch {
+      this.cache = { at: Date.now(), n: null };
+    }
+    return this.cache.n;
   }
   async recordCompletion(r: StoredReport) {
     const rows = toRows(r);
