@@ -492,7 +492,9 @@ export async function act(deps: Deps, uid: string, sessionId: string, req: ActRe
       session.beat += 1;
       session.beatMsgTo = {};
       session.simMinute += build.cost.advance;
-      events.push(...(await writeScripted(deps, session, build, beatEnterEvents(session, build, all()), tr)));
+      const beatTitle = `Beat ${session.beat + 1} of ${build.beats.length} · ${build.beats[session.beat]!.title}`;
+      const divider: ScriptedEvent = { from: "system", channel: "chat", kind: "beat", body: beatTitle };
+      events.push(...(await writeScripted(deps, session, build, [divider, ...beatEnterEvents(session, build, all())], tr)));
       tr.push(trace({ actor: "Engine", type: "validation", summary: `Moved to ${build.beats[session.beat]!.title}`, verdict: "accepted" }));
       break;
     }

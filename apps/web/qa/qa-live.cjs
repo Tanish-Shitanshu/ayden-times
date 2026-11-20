@@ -25,7 +25,7 @@ const assert = (c, m) => { if (!c) throw new Error(m); };
   const send = async (text) => { await nav('Chat'); await page.locator('#composer').fill(text); await page.keyboard.press('Enter'); await page.waitForTimeout(800); };
   const toPerson = async (name) => { await nav('Team'); await page.locator('.ws-team-pane .rail-item', { hasText: name }).first().click(); };
   const openItem = async (title) => { await nav('Work'); await page.getByRole('tab', { name: 'Items' }).click(); await page.locator('.item-switch button', { hasText: title }).first().click(); await page.waitForTimeout(300); };
-  const canAdvance = async () => (await page.getByRole('button', { name: 'Continue to next beat' }).getAttribute('aria-disabled')) !== 'true';
+  const canAdvance = async () => { await nav('Chat'); return (await page.getByRole('button', { name: 'Continue to next beat' }).getAttribute('aria-disabled')) !== 'true'; };
   const advance = async () => { await nav('Chat'); await page.getByRole('button', { name: 'Continue to next beat' }).click(); await page.waitForTimeout(800); };
   const submit = async (title, text) => {
     await nav('Work'); await page.getByRole('tab', { name: /Write/ }).click();
@@ -78,7 +78,7 @@ const assert = (c, m) => { if (!c) throw new Error(m); };
     await openItem('pricing.py'); await page.locator('.work-body .cm-editor').waitFor();
   });
   await row(25, 'Continue enabled only when canAdvance', async () => {
-    await page.waitForFunction(() => { const b = [...document.querySelectorAll('button')].find((x) => x.textContent.includes('Continue to next beat')); return b && !b.getAttribute('aria-disabled'); }, null, { timeout: 10000 });
+    await page.waitForFunction(() => { const b = [...document.querySelectorAll('button')].find((x) => x.textContent.includes('Continue to next beat')); return b && b.getAttribute('aria-disabled') !== 'true'; }, null, { timeout: 10000 });
     await advance(); await page.locator('.ev-beat', { hasText: 'Beat 2' }).waitFor();
   });
   await row(20, 'Edit file → Saving/Saved; Reset restores', async () => {
