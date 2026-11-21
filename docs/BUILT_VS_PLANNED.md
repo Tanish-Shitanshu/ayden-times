@@ -9,7 +9,12 @@
 - Consent, export, delete, cohort patterns with a minimum group size of 5
 - Cloud Run + Firestore + Secret Manager + Cloud Logging deployment
 - BigQuery anonymous skill-pattern rows and Sensitive Data Protection redaction before model calls (both on the request path; status page shows live counts)
-- Spot the trap warm-up game (private, no leaderboard)
+- Spot the trap warm-up game (private, no leaderboard) with a daily challenge and achievements
+- Ramp level, XP and daily quests derived from real evidence (private, no leaderboard); badge gallery with locked badges
+- Vertex AI (Gemini image model) badge illustrations cached in Cloud Storage; Cloud Translation (Hindi) and Gemini speech (Listen) on colleague messages. Each is switched on by an env flag and hides itself when off
+- Interface in 13 languages (English, Hindi and 11 more Indian languages): Hindi is hand-written; the rest are translated at runtime by Cloud Translation and cached in Cloud Storage and on the device. Mission content from the role packs stays English
+- Cross-language colleague: Marco (Milan) speaks Italian; his messages are translated for the learner and the learner's messages reach him in Italian, both with Cloud Translation
+- Cloud Monitoring uptime check and log-based metrics (model fallbacks, sandbox failures)
 
 ## Planned (not built)
 - Data Analyst role with real BigQuery SQL

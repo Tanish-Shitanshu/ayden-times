@@ -1,8 +1,8 @@
-export function formatDate(iso: string, lang: "en" | "hi" = "en") {
-  try { return new Date(iso).toLocaleDateString(lang === "hi" ? "hi-IN" : "en-IN", { day: "numeric", month: "short", year: "numeric" }); } catch { return iso.slice(0, 10); }
+export function formatDate(iso: string, lang: string = "en") {
+  try { return new Date(iso).toLocaleDateString(lang === "en" ? "en-IN" : `${lang}-IN`, { day: "numeric", month: "short", year: "numeric" }); } catch { return iso.slice(0, 10); }
 }
-export function formatDateTime(iso: string, lang: "en" | "hi" = "en") {
-  try { return new Date(iso).toLocaleString(lang === "hi" ? "hi-IN" : "en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); } catch { return iso; }
+export function formatDateTime(iso: string, lang: string = "en") {
+  try { return new Date(iso).toLocaleString(lang === "en" ? "en-IN" : `${lang}-IN`, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); } catch { return iso; }
 }
 /** Converts a simulated minute offset to a label using the mission clock as reference. */
 export function simLabel(simMinute: number, clock: { minute: number; label: string }) {

@@ -51,3 +51,7 @@
 .mock-pill { color: var(--purple-text); }
 .mock-pill:hover { opacity: 1; }
 @media (max-width: 899px) { .mock-pill { bottom: auto; top: 76px; right: 8px; height: 32px; padding: 0 10px; } }
+
+.lang-select { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--outline); border-radius: var(--r-pill); padding: 0 8px 0 12px; height: 36px; color: var(--text-secondary); }
+.lang-select select { border: 0; background: transparent; font: inherit; font-size: 14px; font-weight: 500; color: var(--text); cursor: pointer; padding: 0 4px; height: 100%; max-width: 130px; }
+.lang-select:focus-within { outline: 2px solid var(--primary); outline-offset: 2px; }

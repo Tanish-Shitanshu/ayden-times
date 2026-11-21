@@ -19,7 +19,7 @@ export type ISODate = string;
 export type RoleId = "software-engineer" | "tech-consulting" | "nurse" | "banking-ops" | "data-analyst";
 export type SkillId = string; // defined per role in RoleDetail.skills (never hardcode in UI)
 export type PersonId = string;
-export type Lang = "en" | "hi";
+export type Lang = "en" | "hi" | "bn" | "te" | "mr" | "ta" | "gu" | "ur" | "kn" | "ml" | "or" | "pa" | "as";
 
 /** How the server is currently producing agent replies. UI must show a banner when not 'live'. */
 export type RuntimeMode = "live" | "scripted" | "cached";
@@ -175,6 +175,9 @@ export interface Person {
   avatarHue: number; // 0-359, UI derives avatar colour
   presence: "online" | "busy" | "away";
   modelLabel?: string; // shown in Engine Trace and on hover
+  /** Set when this colleague speaks another language (Cloud Translation bridges the gap). */
+  language?: string;
+  languageName?: string;
 }
 
 export type WorkItem =
@@ -469,7 +472,9 @@ export interface SystemStatus {
   runtime: RuntimeInfo["mode"];
   models: { role: string; id: string; purpose: string }[];
   googleServices: { name: string; state: ServiceState; detail: string }[];
-  counters: { missionsStarted: number; missionsCompleted: number; modelCalls: number; fallbacks: number; quotesVerified: number; quotesRejected: number };
+  /** Which optional Google features are switched on for this deployment. */
+  features?: { badgeArt: boolean; translate: boolean; speech: boolean };
+  counters: { missionsStarted: number; missionsCompleted: number; modelCalls: number; fallbacks: number; quotesVerified: number; quotesRejected: number; redactions?: number; badgeArt?: number; translations?: number; speech?: number };
 }
 
 /* ───────────── drills ───────────── */

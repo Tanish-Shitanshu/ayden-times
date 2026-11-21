@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Chip, Icon, LinkButton } from "../../design/components";
 import "./play.css";
+import { PLAY_KEY, loadPlay, today as todayStr, type PlayStats } from "../game/xp";
 
 interface Round {
   role: string;
@@ -29,18 +30,27 @@ const POOL: Round[] = [
 const ROUNDS = 6;
 const SECONDS = 20;
 const shuffle = <T,>(a: T[]) => { const x = [...a]; for (let i = x.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [x[i], x[j]] = [x[j]!, x[i]!]; } return x; };
-const KEY = "ayden:trap-game";
-const load = (): { best: number; plays: number; streakDays: number; lastDay: string } => { try { return JSON.parse(localStorage.getItem(KEY) ?? "") ; } catch { return { best: 0, plays: 0, streakDays: 0, lastDay: "" }; } };
+/** Small seeded shuffle so the daily challenge is the same six moments all day. */
+const seeded = <T,>(a: T[], seed: number) => { let t = seed; const rnd = () => { t += 0x6d2b79f5; let r = Math.imul(t ^ (t >>> 15), 1 | t); r ^= r + Math.imul(r ^ (r >>> 7), 61 | r); return ((r ^ (r >>> 14)) >>> 0) / 4294967296; }; const x = [...a]; for (let i = x.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [x[i], x[j]] = [x[j]!, x[i]!]; } return x; };
+const dailySeed = () => Number(todayStr().replace(/-/g, ""));
+const ACHIEVEMENTS: { id: string; label: string; icon: string; test: (s: PlayStats) => boolean }[] = [
+  { id: "first", label: "First warm-up", icon: "flag", test: (s) => s.plays >= 1 },
+  { id: "perfect", label: "Perfect run", icon: "military_tech", test: (s) => (s.perfect ?? 0) >= 1 },
+  { id: "streak3", label: "3-day streak", icon: "local_fire_department", test: (s) => s.streakDays >= 3 },
+  { id: "regular", label: "Regular: 5 plays", icon: "repeat", test: (s) => s.plays >= 5 },
+];
 
 export default function Play() {
-  const [deck, setDeck] = useState(() => shuffle(POOL).slice(0, ROUNDS));
+  const [daily, setDaily] = useState(() => loadPlay().lastDay !== todayStr());
+  const [deck, setDeck] = useState(() => (loadPlay().lastDay !== todayStr() ? seeded(POOL, dailySeed()) : shuffle(POOL)).slice(0, ROUNDS));
+  const [rights, setRights] = useState(0);
   const [i, setI] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [combo, setCombo] = useState(0);
   const [left, setLeft] = useState(SECONDS);
   const [done, setDone] = useState(false);
-  const [stats, setStats] = useState(load);
+  const [stats, setStats] = useState(loadPlay);
   const saved = useRef(false);
 
   const round = deck[i];
@@ -50,7 +60,7 @@ export default function Play() {
     if (picked !== null || !round) return;
     const ok = idx !== null && options[idx]?.ok;
     setPicked(idx ?? -1);
-    if (ok) { setScore((s) => s + 10 + Math.min(combo, 4) * 2 + Math.ceil(left / 5)); setCombo((c) => c + 1); } else setCombo(0);
+    if (ok) { setScore((s) => s + 10 + Math.min(combo, 4) * 2 + Math.ceil(left / 5)); setCombo((c) => c + 1); setRights((r) => r + 1); } else setCombo(0);
   }, [picked, round, options, combo, left]);
 
   useEffect(() => {
@@ -68,16 +78,16 @@ export default function Play() {
   useEffect(() => {
     if (!done || saved.current) return;
     saved.current = true;
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayStr();
     const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-    const s = load();
+    const s = loadPlay();
     const streakDays = s.lastDay === today ? s.streakDays : s.lastDay === yesterday ? s.streakDays + 1 : 1;
-    const nx = { best: Math.max(s.best, score), plays: s.plays + 1, streakDays, lastDay: today };
-    try { localStorage.setItem(KEY, JSON.stringify(nx)); } catch { /* ignore */ }
+    const nx: PlayStats = { best: Math.max(s.best, score), plays: s.plays + 1, streakDays, lastDay: today, days: (s.days ?? 0) + (s.lastDay === today ? 0 : 1), perfect: (s.perfect ?? 0) + (rights >= ROUNDS ? 1 : 0) };
+    try { localStorage.setItem(PLAY_KEY, JSON.stringify(nx)); } catch { /* ignore */ }
     setStats(nx);
-  }, [done, score]);
+  }, [done, score, rights]);
 
-  const again = () => { setDeck(shuffle(POOL).slice(0, ROUNDS)); setI(0); setPicked(null); setScore(0); setCombo(0); setLeft(SECONDS); setDone(false); saved.current = false; };
+  const again = () => { setDaily(false); setRights(0); setDeck(shuffle(POOL).slice(0, ROUNDS)); setI(0); setPicked(null); setScore(0); setCombo(0); setLeft(SECONDS); setDone(false); saved.current = false; };
   const max = ROUNDS * 10 + ROUNDS * 4 + 8 * 2;
 
   if (done) {
@@ -91,7 +101,11 @@ export default function Play() {
           <div className="row gap-8 wrap" style={{ justifyContent: "center" }}>
             <Chip icon="local_fire_department" tone="warning">{stats.streakDays}-day streak</Chip>
             <Chip icon="sports_esports" tone="tonal">{stats.plays} plays</Chip>
+            <Chip icon="check_circle" tone="success">{rights} of {ROUNDS} right</Chip>
           </div>
+          <ul className="play-ach" aria-label="Achievements">
+            {ACHIEVEMENTS.map((a) => { const on = a.test(stats); return <li key={a.id} className={on ? "on" : ""}><Icon name={on ? a.icon : "lock"} className="sm" />{a.label}</li>; })}
+          </ul>
           <div className="row gap-12 wrap" style={{ justifyContent: "center", marginTop: 20 }}>
             <Button icon="replay" onClick={again}>Play again</Button>
             <LinkButton to="/roles" variant="tonal" icon="play_arrow">Rehearse a full role</LinkButton>
@@ -111,6 +125,7 @@ export default function Play() {
       <div className="card play-card">
         <div className="play-top">
           <Chip icon={round!.icon} tone="tonal">{round!.role}</Chip>
+          <Chip icon={daily ? "today" : "fitness_center"} tone={daily ? "primary" : "tonal"}>{daily ? "Daily challenge" : "Practice"}</Chip>
           <span className="t-bm t-secondary">Round {i + 1} of {ROUNDS}</span>
           <span className="play-score" aria-live="polite"><Icon name="stars" />{score}</span>
           {combo > 1 && <Chip icon="bolt" tone="success">Combo x{combo}</Chip>}

@@ -111,5 +111,6 @@ export const api = {
   listCohorts: () => request<Cohort[]>("GET", "/cohorts"),
   getInsights: (id: string) => request<CohortInsights>("GET", `/cohorts/${encodeURIComponent(id)}/insights`),
   getStatus: () => request<SystemStatus>("GET", "/system/status"),
+  translateUi: (lang: string, strings: Record<string, string>) => request<{ lang: string; strings: Record<string, string> }>("POST", "/i18n/translate", { lang, strings }),
   health: () => request<{ ok: true }>("GET", "/health"),
 };

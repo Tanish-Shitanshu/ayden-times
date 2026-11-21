@@ -34,5 +34,7 @@ export function SessionExpiredDialog() {
 }
 
 export function Globals() {
+  const boot = useApp((s) => s.bootLanguage);
+  useEffect(() => { boot(); }, [boot]);
   return (<><OfflineBanner /><SessionExpiredDialog /><SnackbarHost /></>);
 }

@@ -7,6 +7,8 @@ import { api } from "../api/client";
 import { content } from "../content";
 import { useFocusOnRoute } from "../lib/a11y";
 import type { I18nKey } from "../i18n/en";
+import type { Lang } from "../contract";
+import { UI_LANGUAGES } from "../lib/languages";
 
 const NAV: { to: string; key: I18nKey; icon: string }[] = [
   { to: "/roles", key: "nav.roles", icon: "work" },
@@ -20,10 +22,13 @@ export function LangToggle() {
   const lang = useApp((s) => s.lang);
   const setLang = useApp((s) => s.setLang);
   return (
-    <div className="lang-toggle" role="group" aria-label={t("lang.label")}>
-      <button type="button" aria-pressed={lang === "en"} onClick={() => setLang("en")} lang="en">EN</button>
-      <button type="button" aria-pressed={lang === "hi"} onClick={() => setLang("hi")} lang="hi">हिं</button>
-    </div>
+    <label className="lang-select">
+      <Icon name="translate" className="sm" />
+      <span className="sr-only">{t("lang.label")}</span>
+      <select value={lang} onChange={(e) => void setLang(e.target.value as Lang)} aria-label={t("lang.label")}>
+        {UI_LANGUAGES.map((l) => <option key={l.code} value={l.code} lang={l.code}>{l.native}</option>)}
+      </select>
+    </label>
   );
 }
 

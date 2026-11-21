@@ -19,3 +19,10 @@
 .play-end { text-align: center; display: grid; gap: 12px; justify-items: center; padding: 32px 20px; }
 .play-trophy { font-size: 56px; width: 56px; height: 56px; color: var(--primary); }
 @media (prefers-reduced-motion: reduce) { .play-opt, .play-timer > div { transition: none; } }
+
+.play-ach { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.play-ach li { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 16px; border: 1px dashed var(--outline); color: var(--text-secondary); font-size: 14px; }
+.play-ach li.on { border-style: solid; border-color: var(--success); background: var(--success-bg); color: var(--success-text); }
+.play-opt.wrong { animation: shake .35s; }
+@keyframes shake { 20% { transform: translateX(-4px); } 60% { transform: translateX(4px); } }
+@media (prefers-reduced-motion: reduce) { .play-opt.wrong { animation: none; } }

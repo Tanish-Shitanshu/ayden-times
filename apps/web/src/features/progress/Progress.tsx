@@ -11,6 +11,10 @@ import { formatDate } from "../../lib/time";
 import { BackLink, Bar, Breadcrumbs, Button, Chip, EmptyState, ErrorState, Icon, LinkButton, Skeleton, IconTile } from "../../design/components";
 import { RampTimeline } from "../roles/RoleDetail";
 import { TranscriptDrawer } from "../common/TranscriptDrawer";
+import { LevelCard } from "../game/LevelCard";
+import { BadgeArt } from "../game/BadgeArt";
+import { useXp } from "../game/useXp";
+import "../game/game.css";
 
 function Sparkline({ s }: { s: SkillProgress }) {
   const lang = useApp((x) => x.lang);
@@ -39,6 +43,7 @@ export default function Progress() {
   const roleId = (param ?? tried[0]) as RoleId | undefined;
   const roles = useAsync(() => api.getRoles(), []);
   const prog = useAsync<P | null>(() => (roleId && tried.includes(roleId) ? api.getProgress(roleId) : Promise.resolve(null)), [roleId, tried.join(",")]);
+  const game = useXp(me.data, roleId);
   const [busy, setBusy] = useState<string | null>(null);
   const [ev, setEv] = useState<{ missionId: string; seq: number } | null>(null);
 
@@ -70,6 +75,7 @@ export default function Progress() {
         : !p ? <EmptyState icon="route" title={t("progress.empty")} body={t("progress.emptyBody")} action={<LinkButton to={param ? `/roles/${param}` : "/roles"} icon="arrow_forward" iconRight>{t("common.browseRoles")}</LinkButton>} />
         : (
           <div className="stack gap-32">
+            {game.xp && <LevelCard xp={game.xp} quests={game.quests} />}
             <section className="card" style={{ padding: 28 }} aria-labelledby="sum-h">
               <div className="row gap-16 wrap">
                 {role && <IconTile icon={role.icon} color={role.accentHex} />}
@@ -117,18 +123,28 @@ export default function Progress() {
 
             <section aria-labelledby="b-h">
               <h2 id="b-h" className="t-tl" style={{ marginBottom: 16 }}>{t("progress.badges")}</h2>
-              {p.badges.length === 0 ? <p className="t-bm t-secondary card tonal">{t("progress.badgesEmpty")}</p> : (
-                <div className="grid grid-3">
-                  {p.badges.map((b) => (
-                    <div key={b.id} className="card stack gap-8">
-                      <div className="row gap-12"><span className="icon-tile sm" style={{ background: "var(--success-bg)", color: "var(--success)" }}><Icon name="workspace_premium" fill /></span><h3 className="t-tm">{b.title}</h3></div>
+              <div className="badge-grid">
+                {p.badges.map((b) => (
+                  <div key={b.id} className="card badge-card">
+                    <BadgeArt roleId={b.roleId} skillId={b.skillId} />
+                    <div className="stack gap-4 grow">
+                      <h3 className="t-tm">{b.title}</h3>
                       <p className="t-bm t-secondary">{b.description}</p>
                       <p className="t-label t-secondary">{t("progress.earned", { d: formatDate(b.earnedAt, lang) })}</p>
                       {b.evidenceSeq ? <div><Button variant="text" size="sm" icon="format_quote" onClick={() => setEv({ missionId: b.missionId, seq: b.evidenceSeq! })}>{t("progress.seeEvidence")}</Button></div> : null}
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+                {p.skills.filter((s) => !p.badges.some((b) => b.skillId === s.skillId)).map((s) => (
+                  <div key={s.skillId} className="card badge-card locked">
+                    <BadgeArt roleId={p.roleId} skillId={s.skillId} locked />
+                    <div className="stack gap-4 grow">
+                      <h3 className="t-tm">{s.label}</h3>
+                      <p className="t-bm t-secondary">Locked. Show {s.target} of {s.anchorsTotal} behaviours with your own words to earn it.</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </section>
 
             <section aria-labelledby="a-h">

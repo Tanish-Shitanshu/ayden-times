@@ -4,6 +4,7 @@ import { Avatar, Button, Chip, Icon } from "../../design/components";
 import { renderMarkdown } from "../../lib/markdown";
 import { useT } from "../../lib/i18n";
 import type { UiEvent } from "./useMission";
+import { MessageTools } from "../game/MessageTools";
 
 const SEV: Record<string, { tone: "error" | "primary" | "tonal" | "purple"; icon: string; label: string }> = {
   blocker: { tone: "error", icon: "block", label: "Blocker" },
@@ -120,6 +121,7 @@ export const EventView = memo(function EventView({ e, people, time, artifacts, h
           <span className="ev-time">{time}</span>
         </div>
         <div className={`ev-bubble ${e.channel === "call" ? "call" : ""}`}><Markdown text={e.body} /></div>
+        {!e.optimistic && <MessageTools seq={e.seq} mine={mine} spoke={mine ? (people.find((p) => p.id === e.to)) : person} />}
         {openLinked}
         {quickReplies && quickReplies.length > 0 && onQuickReply && (
           <div className="row gap-8 wrap" style={{ marginTop: 8 }}>

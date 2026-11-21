@@ -1,12 +1,14 @@
 import { en, type I18nKey } from "../i18n/en";
 import { hi } from "../i18n/hi";
+import { dicts } from "./dict";
+import type { Lang } from "../contract";
 import { useApp } from "../app/store";
 import type { ApiFailure } from "../api/client";
 
 export type T = (key: I18nKey, vars?: Record<string, string | number>) => string;
 
-export function translate(lang: "en" | "hi", key: I18nKey, vars?: Record<string, string | number>) {
-  const s: string = (lang === "hi" ? hi[key] : en[key]) ?? en[key] ?? key;
+export function translate(lang: Lang, key: I18nKey, vars?: Record<string, string | number>) {
+  const s: string = (lang === "hi" ? hi[key] : lang === "en" ? en[key] : dicts[lang]?.[key]) ?? en[key] ?? key;
   return vars ? s.replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? `{${k}}`)) : s;
 }
 

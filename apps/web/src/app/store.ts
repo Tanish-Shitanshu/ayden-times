@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import type { Lang, Me } from "../contract";
 import { api, ApiFailure } from "../api/client";
+import { fetchDictionary } from "../lib/dict";
+import { RTL, isHandWritten, UI_LANGUAGES } from "../lib/languages";
 
 export interface Snack { id: number; text: string; action?: { label: string; run: () => void } }
 
@@ -13,7 +15,9 @@ interface AppState {
   meChecked: boolean;
   sessionExpired: boolean;
   snacks: Snack[];
-  setLang: (l: Lang) => void;
+  setLang: (l: Lang) => Promise<void>;
+  /** Re-applies a saved non-English language after a page load. */
+  bootLanguage: () => void;
   setMe: (me: Me | null) => void;
   /** Loads the current user without creating one. */
   loadMe: () => Promise<Me | null>;
@@ -34,11 +38,23 @@ export const useApp = create<AppState>((set, get) => ({
   meChecked: false,
   sessionExpired: false,
   snacks: [],
-  setLang: (lang) => {
+  setLang: async (lang) => {
+    if (!isHandWritten(lang)) {
+      const before = get().lang;
+      get().toast("Translating the interface with Google Cloud Translation…");
+      try { await get().ensureSession(); } catch { /* handled below */ }
+      const ok = await fetchDictionary(lang);
+      if (!ok) { get().toast("Could not translate the interface right now. Keeping the current language."); set({ lang: before }); return; }
+    }
     write("ayden_lang", lang);
     document.documentElement.lang = lang;
+    document.documentElement.dir = RTL.has(lang) ? "rtl" : "ltr";
     set({ lang });
     if (get().me) api.updateMe({ language: lang }).then((me) => set({ me })).catch(() => undefined);
+  },
+  bootLanguage: () => {
+    const saved = read("ayden_lang") as Lang | null;
+    if (saved && !isHandWritten(saved) && UI_LANGUAGES.some((l) => l.code === saved)) void get().setLang(saved);
   },
   setMe: (me) => set({ me, meChecked: true }),
   loadMe: async () => {

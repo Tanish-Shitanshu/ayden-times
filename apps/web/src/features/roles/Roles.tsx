@@ -5,6 +5,8 @@ import { useApp } from "../../app/store";
 import { ErrorState, Icon, LinkButton, SlowNote } from "../../design/components";
 import { RoleCard, RoleCardSkeleton } from "./RoleCard";
 import type { Progress } from "../../contract";
+import { LevelCard } from "../game/LevelCard";
+import { useXp } from "../game/useXp";
 
 export default function Roles() {
   const t = useT();
@@ -16,6 +18,7 @@ export default function Roles() {
     await Promise.all(tried.map((r) => api.getProgress(r).then((p) => { out[r] = p; }).catch(() => undefined)));
     return out;
   }, [tried.join(",")]);
+  const game = useXp(me);
   const label = (id: string) => {
     const p = progress.data?.[id];
     if (!p) return undefined;
@@ -29,6 +32,7 @@ export default function Roles() {
         <h1 className="t-hl page-title">{t("roles.title")}</h1>
         <p className="t-bl t-secondary measure">{t("roles.sub")}</p>
       </div>
+      {game.xp && game.xp.xp > 0 && <div style={{ marginBottom: 24 }}><LevelCard xp={game.xp} quests={game.quests} compact /></div>}
       {roles.error ? <ErrorState error={roles.error} retry={roles.reload} /> : (
         <>
           <div className="grid grid-3">

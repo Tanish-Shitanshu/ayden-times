@@ -10,6 +10,7 @@ import { copyText, reportMap, useAsync } from "../../lib/hooks";
 import { BackLink, Banner, Bar, Breadcrumbs, Button, Chip, Dialog, ErrorState, Icon, LinkButton, LogoGlyph, Tooltip } from "../../design/components";
 import { TranscriptDrawer } from "../common/TranscriptDrawer";
 import type { I18nKey } from "../../i18n/en";
+import { Celebrate } from "../game/Celebrate";
 
 const STATE: Record<SkillResult["state"], { tone: "success" | "warning" | "error" | "tonal"; icon: string; color: string }> = {
   strong: { tone: "success", icon: "verified", color: "var(--success)" },
@@ -148,6 +149,8 @@ export default function Debrief() {
         <h1 className="t-hm page-title measure" style={{ marginTop: 12 }}>{report.headline}</h1>
         <p className="t-bl t-secondary measure">{report.summary}</p>
       </div>
+
+      <Celebrate report={report} missionId={missionId} />
 
       <section aria-labelledby="sm-h">
         <h2 id="sm-h" className="t-tl" style={{ marginBottom: 16 }}>{t("debrief.skillMap")}</h2>
