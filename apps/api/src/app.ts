@@ -11,6 +11,7 @@ import { config } from "./config.js";
 import { ApiError, type Deps } from "./domain/engine.js";
 import type { Analytics } from "./infra/analytics.js";
 import { BigQueryAnalytics, NoAnalytics } from "./infra/analytics.js";
+import { GoogleExtras } from "./infra/google-extras.js";
 import { FirestoreStore } from "./infra/firestore.js";
 import { error as logError } from "./infra/log.js";
 import { setRedactStore } from "./infra/redact.js";
@@ -25,7 +26,7 @@ export async function buildApp(opts: { store?: Store; llm?: LlmClient; analytics
   setRedactStore(store);
   const llm = opts.llm ?? createLlm(store);
   const analytics = opts.analytics ?? (process.env.ANALYTICS === "bigquery" && config.project ? new BigQueryAnalytics(config.project) : new NoAnalytics());
-  const deps: Deps = { store, llm, runner: makeRunner(llm), analytics };
+  const deps: Deps = { store, llm, runner: makeRunner(llm), analytics, extras: new GoogleExtras(store) };
   const app = Fastify({ logger: false, trustProxy: true, bodyLimit: 256 * 1024 });
   await app.register(cookie);
 
@@ -34,7 +35,7 @@ export async function buildApp(opts: { store?: Store; llm?: LlmClient; analytics
     reply.header("referrer-policy", "no-referrer");
     reply.header("x-frame-options", "DENY");
     reply.header("permissions-policy", "camera=(), microphone=(), geolocation=()");
-    if (_req.url.startsWith("/api/")) reply.header("cache-control", "no-store");
+    if (_req.url.startsWith("/api/") && !reply.getHeader("cache-control")) reply.header("cache-control", "no-store");
   });
 
   app.setErrorHandler((err: unknown, _req: FastifyRequest, reply: FastifyReply) => {

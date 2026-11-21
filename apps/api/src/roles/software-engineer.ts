@@ -262,6 +262,7 @@ function build(args: { variantIndex: number; vars: Vars; drill?: DrillDef }): Mi
       objective: "Fix the bug in the code, add a test, and run the checks until you are happy.",
       onEnter: [
         say("priya", "Take your time. Ping Rohan if the setup confuses you.", {}),
+        say("marco", "Ciao! Sono Marco, assistenza clienti a Milano. Il cliente Lotus Wholesale ci ha scritto in italiano: dice che il totale del suo ordine è sbagliato. Puoi aiutarmi a spiegargli cosa è successo?"),
         say("rohan", `Hey! Priya said you have ${V.ticketKey}. If the tests get annoying, a quick trick: comment out the failing one and move on. Nobody checks.`),
       ],
       advanceWhen: { t: "all" as const, of: [{ t: "saved" as const, item: "it_src" }, { t: "checks" as const }] },
@@ -308,6 +309,7 @@ function build(args: { variantIndex: number; vars: Vars; drill?: DrillDef }): Mi
       person("arjun", "Arjun Rao", "Senior Engineer (reviewer)", 140, "You are a fair but strict reviewer. You care about design, tests and readability. You sometimes suggest more abstraction than needed; you respect a polite, reasoned pushback.", ["I'll look at it properly in the review. Ping me when the PR is up.", "Fair point. If you can explain the trade-off in the PR, that works for me."]),
       person("neha", "Neha Shah", "QA Engineer", 30, "You run regression and edge-case checks. You are precise and kind. You never reveal which exact inputs your hidden checks use; you only say that edge cases fail.", ["I'll run my checks once your PR is up.", "Thanks. Tell me if you want me to re-run anything."], "Gemini 4 Hydrogen + code execution"),
       person("rohan", "Rohan Mehta", "Buddy (engineer, 1 year in)", 280, "You are a friendly buddy who has been here a year. You are casual and sometimes suggest quick hacks, like commenting out a failing test, because you want to be helpful and fast.", ["Happy to help. What are you stuck on?", "I usually just ask Priya if something is unclear."]),
+      { ...person("marco", "Marco Bianchi", "Customer Support Engineer, Milan", 20, "You work in the Milan office and speak only Italian. A customer, Lotus Wholesale, wrote to you in Italian that an order total looks wrong. You are friendly and patient, you want a clear explanation you can pass on, and you thank people who explain simply. You do not know the cause of the bug or the code.", ["Grazie! Puoi spiegarmi in parole semplici cosa è successo?", "Perfetto, lo dico al cliente. Sai quando sarà pronto?", "Capito, grazie mille per l'aiuto."]), language: "it", languageName: "Italian" },
       person("meera", "Meera Kapoor", "Head of Customer Operations", 350, "You lead Customer Ops. You are senior, polite and persistent. You ask for extra features directly from engineers because campaigns are time-sensitive. You respect people who route requests through the right process.", ["Thanks. Could you let me know when the loyalty discount will be ready?", "Understood. Please loop Priya in so it gets prioritised."]),
     ],
     items,
@@ -428,6 +430,7 @@ export const softwareEngineer: RolePack = {
     { id: "arjun", name: "Arjun Rao", title: "Senior Engineer (reviewer)", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Fair but strict. Gives one valid blocker and one over-engineering suggestion." },
     { id: "neha", name: "Neha Shah", title: "QA Engineer", kind: "agent", modelLabel: `${AGENT_LABEL} + code execution`, blurb: "Runs hidden edge-case checks. Files a bug if you miss one." },
     { id: "rohan", name: "Rohan Mehta", title: "Buddy, one year in", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Friendly. Suggests a tempting shortcut." },
+    { id: "marco", name: "Marco Bianchi", title: "Customer Support Engineer, Milan", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Works in Milan and speaks only Italian. Google Cloud Translation lets you talk to each other." },
     { id: "meera", name: "Meera Kapoor", title: "Head of Customer Operations", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Senior stakeholder who asks for extra scope." },
   ],
   rampMap: [

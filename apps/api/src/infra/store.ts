@@ -9,6 +9,9 @@ export interface Counters {
   quotesVerified: number;
   quotesRejected: number;
   redactions: number;
+  badgeArt: number;
+  translations: number;
+  speech: number;
 }
 
 export interface Store {
@@ -48,6 +51,9 @@ export const emptyCounters = (): Counters => ({
   quotesVerified: 0,
   quotesRejected: 0,
   redactions: 0,
+  badgeArt: 0,
+  translations: 0,
+  speech: 0,
 });
 
 /** In-memory store: used by tests and local dev. Data is lost on restart. */

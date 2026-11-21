@@ -95,6 +95,9 @@ export interface PersonDef {
   /** Generic scripted lines used if no ReplyRule matches (rotated). */
   defaultLines: string[];
   modelLabel?: string;
+  /** The colleague speaks this language (Cloud Translation code, e.g. "it"). Replies and scripted lines are in it. */
+  language?: string;
+  languageName?: string;
 }
 
 /* ───────────── anchors and scoring ───────────── */

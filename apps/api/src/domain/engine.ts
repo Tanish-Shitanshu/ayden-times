@@ -40,6 +40,7 @@ export interface Deps {
   llm: LlmClient;
   runner: Runner;
   analytics?: Analytics;
+  extras?: import("../infra/google-extras.js").GoogleExtras;
 }
 
 const nowIso = () => new Date().toISOString();
@@ -127,7 +128,7 @@ export function deltaOf(session: Session, build: MissionBuild): StateDelta {
 
 export function toState(session: Session, build: MissionBuild): MissionState {
   const d = deltaOf(session, build);
-  const people: Person[] = build.people.map((p) => ({ id: p.id, name: p.name, title: p.title, kind: p.kind, avatarHue: p.hue, presence: "online", modelLabel: p.modelLabel }));
+  const people: Person[] = build.people.map((p) => ({ id: p.id, name: p.name, title: p.title, kind: p.kind, avatarHue: p.hue, presence: "online", modelLabel: p.modelLabel, ...(p.language ? { language: p.language, languageName: p.languageName } : {}) }));
   return {
     id: session.id,
     roleId: session.roleId,
@@ -385,7 +386,8 @@ export async function act(deps: Deps, uid: string, sessionId: string, req: ActRe
         replaced = replaced || !!t.replacesReply;
       }
       if (!replaced) {
-        const out = await agentReply({ llm, build, person, session, events: all(), learnerText: text });
+        const toAgent = person.language && deps.extras ? ((await deps.extras.translate(text, person.language)) ?? text) : text;
+        const out = await agentReply({ llm, build, person, session, events: all(), learnerText: toAgent });
         tr.push(...out.trace);
         let replyText = out.text;
         let quick = out.quickReplies;

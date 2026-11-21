@@ -12,7 +12,8 @@ describe("Software Engineer mission (scripted mode, local sandbox)", () => {
     expect(created.status).toBe(200);
     const m = created.body as MissionState;
     expect(m.beat.index).toBe(0);
-    expect(m.people.length).toBe(5);
+    expect(m.people.length).toBe(6);
+    expect(m.people.find((p) => p.id === "marco")).toMatchObject({ language: "it", languageName: "Italian" });
     const fam = FAMILIES[Number(m.variantLabel.includes("shipping") ? 1 : 0)]!;
     let seq = 0;
     const act = async (b: Record<string, unknown>) => (await c.call("POST", `/missions/${m.id}/act`, { clientSeq: ++seq, ...b })) as { status: number; body: ActResponse };

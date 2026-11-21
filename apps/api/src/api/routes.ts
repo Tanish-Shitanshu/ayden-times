@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
 import type {
+  Lang,
   Cohort,
   CohortInsights,
   Me,
@@ -20,6 +21,8 @@ import { computeProgress } from "../domain/progress.js";
 import { publicReport } from "../domain/report.js";
 import type { CohortRec, RolePack, UserRec } from "../domain/types.js";
 import { ROLES, getRole } from "../roles/index.js";
+import { plainText } from "../infra/google-extras.js";
+import { ALL_CODES, LANGUAGE_NAMES, UI_CODES } from "../infra/languages.js";
 import { RateLimiter, clearSession, newUserId, readUid, requireUser, setSession } from "./auth.js";
 
 const nowIso = () => new Date().toISOString();
@@ -108,9 +111,9 @@ export function registerRoutes(app: FastifyInstance, deps: Deps) {
 
   app.patch("/me", async (req) => {
     const user = await requireUser(req, store);
-    const body = z.object({ displayName: z.string().trim().min(1).max(40).optional(), language: z.enum(["en", "hi"]).optional() }).parse(req.body ?? {});
+    const body = z.object({ displayName: z.string().trim().min(1).max(40).optional(), language: z.enum(UI_CODES as unknown as [string, ...string[]]).optional() }).parse(req.body ?? {});
     if (body.displayName) user.displayName = body.displayName;
-    if (body.language) user.language = body.language;
+    if (body.language) user.language = body.language as Lang;
     await store.putUser(user);
     return toMe(user);
   });
@@ -296,6 +299,64 @@ export function registerRoutes(app: FastifyInstance, deps: Deps) {
     return cohortInsights(c, members, reports);
   });
 
+  /* ───────── Google extras: badge art, translation, speech ───────── */
+
+  const extrasLimiter = new RateLimiter(30, 60_000);
+
+  /** One illustration per badge. Public on purpose (not personal), bounded to the skills that exist. */
+  app.get("/badges/:roleId/:skillId/art", async (req, reply) => {
+    const { roleId, skillId } = req.params as { roleId: string; skillId: string };
+    const role = ROLES.find((r) => r.id === roleId);
+    const skill = role?.skills.find((x) => x.id === skillId);
+    if (!role || !skill || !deps.extras) return reply.status(404).send({ error: { code: "not_found", message: "No art for this badge." } });
+    const png = await deps.extras.badgeArt(`${role.id}__${skill.id}`, skill.badge, role.title);
+    if (!png) return reply.status(404).send({ error: { code: "not_found", message: "No art for this badge." } });
+    return reply.header("content-type", "image/png").header("cache-control", "public, max-age=86400").send(png);
+  });
+
+  /** A message in a mission the learner owns, by sequence number. Never accepts free text. */
+  async function lineOf(req: FastifyRequest) {
+    const user = await requireUser(req, store);
+    const wait = extrasLimiter.check(user.id);
+    if (wait !== null) throw new ApiError(429, "rate_limited", "Slow down a little.", wait);
+    const body = z.object({ seq: z.number().int().min(1), lang: z.enum(ALL_CODES as unknown as [string, ...string[]]).optional(), from: z.string().max(8).optional() }).parse(req.body ?? {});
+    const s = await loadOwned(store, user.id, (req.params as { id: string }).id);
+    const ev = (await store.listEvents(s.id, body.seq - 1)).find((e) => e.seq === body.seq);
+    if (!ev || ev.from === "system" || ev.kind === "beat" || ev.kind !== "message") throw new ApiError(404, "not_found", "That message cannot be read aloud or translated.");
+    return { ev, lang: body.lang, mine: ev.from === "you", userLang: user.language };
+  }
+
+  app.post("/missions/:id/translate", async (req) => {
+    const { ev, lang, userLang } = await lineOf(req);
+    const target = lang ?? (userLang !== "en" ? userLang : "en");
+    const text = await deps.extras?.translate(plainText(ev.body), target);
+    if (!text) throw new ApiError(503, "internal", "Translation is not available right now.");
+    return { seq: ev.seq, lang: target, languageName: LANGUAGE_NAMES[target] ?? target, text };
+  });
+
+  /** Translates the interface dictionary into an Indian language with Cloud Translation. Cached in Cloud Storage. */
+  const i18nLimiter = new RateLimiter(20, 60 * 60_000);
+  app.post("/i18n/translate", async (req) => {
+    const user = await requireUser(req, store);
+    const wait = i18nLimiter.check(user.id);
+    if (wait !== null) throw new ApiError(429, "rate_limited", "Slow down a little.", wait);
+    const body = z.object({ lang: z.enum(UI_CODES as unknown as [string, ...string[]]), strings: z.record(z.string().max(60), z.string().max(1200)) }).parse(req.body ?? {});
+    if (Object.keys(body.strings).length > 600) throw new ApiError(400, "validation", "Too many strings.");
+    const strings = await deps.extras?.translateDictionary(body.strings, body.lang);
+    if (!strings) throw new ApiError(503, "internal", "Translation is not available right now.");
+    return { lang: body.lang, strings };
+  });
+
+  app.post("/missions/:id/speech", async (req, reply) => {
+    const { ev, lang } = await lineOf(req);
+    if (ev.from === "you") throw new ApiError(404, "not_found", "Only colleague messages can be read aloud.");
+    let text = plainText(ev.body);
+    if (lang && lang !== "it") text = (await deps.extras?.translate(text, lang)) ?? text;
+    const wav = await deps.extras?.speak(text, ev.from);
+    if (!wav) throw new ApiError(503, "internal", "Speech is not available right now.");
+    return reply.header("content-type", "audio/wav").header("cache-control", "private, max-age=3600").send(wav);
+  });
+
   /* ───────── system ───────── */
 
   app.get("/system/status", async (): Promise<SystemStatus> => {
@@ -323,8 +384,14 @@ export function registerRoutes(app: FastifyInstance, deps: Deps) {
         { name: "Cloud Logging", state: onRun ? "live" : "fallback", detail: "Structured logs: model, latency, verdicts. Never prompts or user text" },
         { name: "Antigravity + Agent Skills", state: process.env.ANTIGRAVITY_USED === "1" ? "live" : "planned", detail: "Used to build; standards skills live in the repo (.agents/skills)" },
         { name: "BigQuery", state: bqRows > 0 ? "live" : "planned", detail: bqRows > 0 ? `Anonymous skill-pattern rows in BigQuery (${bqRows} so far); no user ids or text` : "Anonymous analytics export (not yet written)" },
+        { name: "Vertex AI image generation", state: (counters.badgeArt ?? 0) > 0 ? "live" : "planned", detail: (counters.badgeArt ?? 0) > 0 ? `Gemini image model generates one illustration per badge (${counters.badgeArt} so far), billed to our Cloud project` : "Badge illustrations (not generated yet)" },
+        { name: "Cloud Storage", state: (counters.badgeArt ?? 0) > 0 ? "live" : "planned", detail: "Caches each generated badge illustration so it is made once" },
+        { name: "Cloud Translation", state: (counters.translations ?? 0) > 0 ? "live" : "planned", detail: (counters.translations ?? 0) > 0 ? `Colleague messages translated to Hindi on request (${counters.translations} so far)` : "Hindi translation of a colleague's message on request" },
+        { name: "Gemini speech", state: (counters.speech ?? 0) > 0 ? "live" : "planned", detail: (counters.speech ?? 0) > 0 ? `Colleague messages read aloud (${counters.speech} so far)` : "Listen to a colleague's message" },
+        { name: "Cloud Monitoring", state: process.env.MONITORING === "on" ? "live" : "planned", detail: "Uptime check on /api/v1/health and log-based metrics for model fallbacks" },
         { name: "Sensitive Data Protection", state: counters.redactions > 0 ? "live" : "planned", detail: counters.redactions > 0 ? `Personal data is redacted before text reaches Gemini (${counters.redactions} calls so far)` : "Personal-data redaction before model calls (basic redaction runs today)" },
       ],
+      features: { badgeArt: !!deps.extras?.artEnabled, translate: !!deps.extras?.translateEnabled, speech: !!deps.extras?.speechEnabled },
       counters,
     };
   });
