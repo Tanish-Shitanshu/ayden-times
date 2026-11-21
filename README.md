@@ -111,7 +111,13 @@ The honest list of what is built and what is planned: [docs/BUILT_VS_PLANNED.md]
 | Cloud Build + Artifact Registry | Deploy from source |
 | Firestore | Sessions, events, reports |
 | Secret Manager | Gemini key and session secret |
-| Cloud Logging | Structured logs |
+| Cloud Logging | Structured logs: model, latency, verdicts; never prompts or user text |
+| BigQuery | Anonymous skill-pattern rows; no user ids or text |
+| Sensitive Data Protection | Personal data redacted before text reaches Gemini |
+| Vertex AI image generation + Cloud Storage | One illustration per badge, generated once and cached |
+| Cloud Translation | Colleague messages translated on request |
+| Gemini speech | Colleague messages read aloud |
+| Cloud Monitoring | Uptime check on `/api/v1/health`, log-based metrics for model fallbacks |
 
 Models in use: `gemini-3.5-flash-lite` (colleagues), `gemini-3.1-flash-lite` (judge, weaver, tester), `gemini-embedding-2`.
 
