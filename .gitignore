@@ -12,3 +12,8 @@ coverage/
 *.key
 service-account*.json
 *.tsbuildinfo
+
+# Pitch deck lives outside the repository
+docs/deck/
+*.pptx
+Ayden-Times-Deck*.pdf
