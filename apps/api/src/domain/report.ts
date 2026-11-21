@@ -130,9 +130,15 @@ export async function buildReport(deps: Deps, args: { session: Session; build: M
   const headline = top && first ? `Strong on ${top.label.toLowerCase()}. Next: ${first.label.toLowerCase()}.` : first ? `Your first target: ${first.label.toLowerCase()}.` : tested.length ? "Strong across the board on this scenario. Try a fresh variant." : "Mission complete.";
   const summary = `You showed ${tested.reduce((a, s) => a + s.anchorsMet, 0)} of ${tested.reduce((a, s) => a + s.anchorsTotal, 0)} observable behaviours. ${strong.length ? `At target: ${strong.map((s) => s.label.toLowerCase()).join(", ")}. ` : ""}${weak.length ? `Still developing: ${weak.map((s) => s.label.toLowerCase()).join(", ")}.` : ""}`.trim();
 
-  const keyMoments = tested
-    .flatMap((s) => s.evidence.filter((e) => e.tone === "good").map((e) => ({ eventSeq: e.eventSeq, quote: e.quote, why: e.note, skillId: s.skillId })))
-    .slice(0, 3);
+  // One moment per message: when a single message backs several behaviours keep the fullest quote.
+  const momentsBySeq = new Map<number, { eventSeq: number; quote: string; why: string; skillId: string }>();
+  for (const s of tested) {
+    for (const e of s.evidence.filter((x) => x.tone === "good")) {
+      const prev = momentsBySeq.get(e.eventSeq);
+      if (!prev || e.quote.length > prev.quote.length) momentsBySeq.set(e.eventSeq, { eventSeq: e.eventSeq, quote: e.quote, why: e.note, skillId: s.skillId });
+    }
+  }
+  const keyMoments = [...momentsBySeq.values()].slice(0, 3);
 
   const traps = build.traps.map((t) => ({ id: t.id, label: t.label, missed: t.missed(ctx) }));
   const usedJudge = !!judge;
