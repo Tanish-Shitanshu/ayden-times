@@ -2,6 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { config, liveAvailable } from "../config.js";
 import type { Store } from "../infra/store.js";
 import { warn } from "../infra/log.js";
+import { classifyKeyFailure, keyring } from "../infra/keyring.js";
 
 export interface ToolDecl {
   name: string;
@@ -51,13 +52,18 @@ function collectStrings(v: unknown, out: string[] = [], depth = 0): string[] {
 
 export class GeminiLlm implements LlmClient {
   private client: GoogleGenAI | null = null;
+  private clientKey = "";
   private failures = 0;
   private openUntil = 0;
 
   constructor(private store: Store) {}
 
   private get ai(): GoogleGenAI {
-    if (!this.client) this.client = new GoogleGenAI({ apiKey: config.geminiKey });
+    const key = config.geminiKey;
+    if (!this.client || this.clientKey !== key) {
+      this.client = new GoogleGenAI({ apiKey: key });
+      this.clientKey = key;
+    }
     return this.client;
   }
 
@@ -78,11 +84,17 @@ export class GeminiLlm implements LlmClient {
     try {
       await this.store.incr("modelCalls");
       let result: T;
+      const used = config.geminiKey;
       try {
         result = await attempt();
       } catch (e) {
         const msg = String((e as Error).message ?? e);
-        if (/429|5\d\d|UNAVAILABLE|RESOURCE_EXHAUSTED|timed out/i.test(msg)) {
+        const kind = classifyKeyFailure(msg);
+        if (kind && keyring.size > 1 && keyring.report(used, kind)) {
+          warn("switching Gemini key", { reason: kind, from: keyring.label(used), to: keyring.label(config.geminiKey) });
+          await this.store.incr("modelCalls");
+          result = await attempt();
+        } else if (/429|5\d\d|UNAVAILABLE|RESOURCE_EXHAUSTED|timed out/i.test(msg)) {
           await new Promise((r) => setTimeout(r, 400 + Math.random() * 400));
           await this.store.incr("modelCalls");
           result = await attempt();

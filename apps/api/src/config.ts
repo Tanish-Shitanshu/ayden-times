@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { keyring } from "./infra/keyring.js";
 
 const env = process.env;
 const nodeEnv = env.NODE_ENV ?? "development";
@@ -17,7 +18,10 @@ export const config = {
   nodeEnv,
   isProd: nodeEnv === "production",
   llmMode: (env.LLM_MODE ?? "scripted") as LlmMode,
-  geminiKey: env.GEMINI_API_KEY ?? "",
+  /** The Gemini key in use right now: the primary, or a backup while the primary is rate-limited. */
+  get geminiKey(): string {
+    return keyring.current();
+  },
   models: {
     agent: env.MODEL_AGENT ?? "gemini-3.5-flash-lite",
     reason: env.MODEL_REASON ?? "gemini-3.1-flash-lite",
