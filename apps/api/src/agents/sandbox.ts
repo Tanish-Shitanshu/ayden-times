@@ -53,11 +53,34 @@ export function makeRunner(llm: LlmClient): Runner {
   return async (program, timeoutMs = 25_000) => {
     if (config.sandbox === "local-python") return runLocalPython(program, Math.min(timeoutMs, 8000));
     if (!llm.live()) return null;
-    try {
-      return extractResults(await llm.exec(program, timeoutMs));
-    } catch (e) {
-      warn("sandbox exec failed", { error: String((e as Error).message).slice(0, 160) });
-      return null;
+    // The program travels to the sandbox as base64 that the model must copy verbatim. Now and then it
+    // garbles a character, so the harness itself fails to decode it. That is not the learner's fault:
+    // retry a few times, then fall back to the labelled static checks.
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const line = extractResults(await llm.exec(program, timeoutMs));
+        if (line === null || !isTransportFailure(line)) return line;
+        warn("sandbox transport garbled, retrying", { attempt });
+      } catch (e) {
+        warn("sandbox exec failed", { error: String((e as Error).message).slice(0, 160) });
+        return null;
+      }
     }
+    return null;
   };
+}
+
+/** True when the only result is a load failure caused by the base64 payload, not by the learner's code. */
+export function isTransportFailure(line: string): boolean {
+  try {
+    const arr = JSON.parse(line) as { id?: string; passed?: boolean; msg?: string }[];
+    return (
+      arr.length === 1 &&
+      arr[0]!.id === "load" &&
+      arr[0]!.passed === false &&
+      /ascii|incorrect padding|invalid base64|non-base64|binascii|character .* base64|invalid character/i.test(arr[0]!.msg ?? "")
+    );
+  } catch {
+    return false;
+  }
 }
