@@ -134,6 +134,8 @@ export interface AnchorDef {
 export interface TrapDef {
   id: string;
   label: string;
+  /** What falling into this trap would cost, in plain words (shown in the report as a close call). */
+  impact?: string | ((ctx: ScoreCtx) => string);
   /** true if the learner fell into the trap */
   missed: (ctx: ScoreCtx) => boolean;
 }
@@ -190,6 +192,8 @@ export interface MissionBuild {
   /** skills measured in this build (drills measure one) */
   activeSkills: string[];
   traps: TrapDef[];
+  /** Colleague trust: the anchors whose success makes each colleague trust the learner more. 0 met = wary, some = warming up, most = trusts you. */
+  trust?: Record<string, string[]>;
   /** extra system context lines for the judge (scenario summary) */
   judgeContext: string;
   /** Learner messages that need role-specific flag handling (e.g. self-approval detection). */

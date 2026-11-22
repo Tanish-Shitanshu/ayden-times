@@ -189,3 +189,6 @@
 .ev-msg.mine .ev-bubble.call { border-color: transparent; }
 .ev-update { background: var(--primary-container); border-color: transparent; color: var(--on-primary-container); }
 .item-switch .unread-dot { margin-left: 4px; }
+.trust-chip { display: inline-flex; align-self: flex-start; font-size: 11px; line-height: 16px; padding: 0 8px; border-radius: 999px; border: 1px solid var(--outline); color: var(--text-secondary); margin-top: 2px; }
+.trust-chip.trust-1 { color: var(--primary); border-color: var(--primary); }
+.trust-chip.trust-2 { color: var(--success); border-color: var(--success); background: var(--success-bg); }

@@ -27,7 +27,7 @@ New graduates are judged on day-one work, but nobody lets them practise it. Inte
 
 ## How it works
 
-1. **Pick a role.** Software Engineer, Banking Ops, Nurse, Consulting or Startup CEO.
+1. **Pick a role.** Software Engineer, Junior Financial Analyst, Procurement Trainee, or Consulting and Advisory Analyst.
 2. **Work a realistic day** with a team of AI colleagues: manager, reviewer, QA, buddy, a senior stakeholder. Read the ticket, ask questions, write real code, commit, open a pull request, handle review feedback.
 3. **Get a Skill X-ray.** Where you are strong, where you are lacking, how your self-rating compares with what you showed, and what to practise next.
 4. **Drill the gap.** A short targeted drill or a new variant of the same scenario.
@@ -69,7 +69,7 @@ flowchart LR
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/images/roles.png" alt="Role picker"><br><sub><b>Role picker.</b> Four roles ready; Data Analyst is shown as planned.</sub></td>
+    <td width="50%"><img src="docs/images/roles.png" alt="Role picker"><br><sub><b>Role picker.</b> Four roles ready.</sub></td>
     <td width="50%"><img src="docs/images/onboarding.png" alt="Consent screen"><br><sub><b>Consent first.</b> Two required boxes; sharing group patterns is optional.</sub></td>
   </tr>
   <tr>
@@ -89,7 +89,9 @@ flowchart LR
 
 | Area | State |
 |---|---|
-| Roles | Software Engineer, Banking Ops, Nurse, Consulting, Startup CEO ready; Data Analyst planned |
+| Roles | Software Engineer (2 missions), Junior Financial Analyst, Procurement Trainee, Consulting and Advisory Analyst (2 missions). Marketing, Nurse, Startup CEO, Banking Ops and Data Analyst are built or planned but hidden |
+| Practice that sticks | Close calls (mistakes avoided and what they would have cost), a calibration score (your self-rating against what you showed), colleague trust that changes how colleagues talk to you |
+| Files | Excel and PDF in and out, handled in the browser (download .xlsx and PDF, upload an .xlsx answer, export a memo as PDF) |
 | Engine | Turn-based world, beats, scripted events, knowledge boundaries, commitment detection, validated tools, idempotent actions |
 | Agents | Gemini function-calling colleagues; scripted fallback, flagged in the UI |
 | Code checks | Run in Google's code-execution sandbox; labelled static fallback |
@@ -126,7 +128,7 @@ Models in use: `gemini-3.5-flash-lite` (colleagues), `gemini-3.1-flash-lite` (ju
 - Your results are **private to you**. Colleges and employers see only anonymous patterns from groups of **5 or more**.
 - **No leaderboards.** Ever.
 - Feedback is **formative, not a hiring score**.
-- Nurse and banking scenarios are **simplified, fictional training scenarios**, not clinical or compliance advice, and have not been reviewed by a clinician or compliance professional.
+- All scenarios are **simplified, fictional training scenarios** with fictional companies and numbers. They are not financial, legal, audit or hiring advice, and have not yet been reviewed by a practitioner in each field.
 
 ## Run it locally
 

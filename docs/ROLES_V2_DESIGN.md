@@ -28,6 +28,11 @@ Hidden (kept in code, reachable by id, not listed): Digital Marketing Associate,
 ## Admin
 `/admin` lists all feedback and can **remove** (never add or edit) a response. Needs `ADMIN_TOKEN` (16+ characters) set on the server; unset means the routes return 404. Put it in Secret Manager before deploying.
 
+## What makes practice stick (built 22 Nov, evening)
+- **Close calls:** every trap carries a plain cost line (for example, a duplicate invoice would have overstated Freight by the invoice amount). The report lists mistakes avoided and mistakes fallen into. Missions only.
+- **Calibration score:** the 1 to 5 self-rating given before the mission against the share of behaviours shown, per skill. 100 means you judged yourself accurately; it is not a skill score and rewards neither high nor low ratings.
+- **Colleague trust:** each colleague has a list of behaviours that earn their trust (none = wary, some = warming up, most = trusts you). The level is shown on the chat header and fed into that colleague's model prompt so their tone changes; it never changes what they know or may reveal.
+
 ## Google services in the product (say only what is true)
 Live: Gemini API (function calling for the colleagues, structured output for the judge, embeddings for drill matching, code execution for the Software Engineer sandbox, speech for "Listen"), Vertex AI image (badge art), Cloud Translation (a colleague who speaks another language, and 13 interface languages), Sensitive Data Protection (redaction), Cloud Run, Cloud Build, Artifact Registry, Firestore, Secret Manager, Cloud Logging, BigQuery (anonymous skill patterns).
 Not added this round: no new Google service. Excel and PDF are built in the browser. Looker Studio on BigQuery is a free option (see SETUP_STEPS.md); do not claim it until built.

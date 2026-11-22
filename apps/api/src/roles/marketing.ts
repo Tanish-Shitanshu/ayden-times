@@ -295,12 +295,13 @@ function build(args: { variantIndex: number; vars: Vars; drill?: DrillDef }): Mi
       { id: "brand", text: `${g.brandShare}% of Brand Search buyers would have bought anyway.`, knownBy: ["kavya"], leak: [new RegExp(`${g.brandShare}\\s?(percent|%)`, "i")] },
     ],
     cost: { message: 4, open: 2, checks: 0, submit: 15, advance: 25 },
+    trust: { kavya: ["asked_brand_incremental", "core_metrics", "within_budget", "ranked_by_roas"], imran: ["asked_tracking", "found_tracking_issue"], khanna: ["pushed_back_client", "no_banned_claims"] },
     activeSkills: drill ? [drill.skillId] : SKILLS.map((s) => s.id),
     traps: [
-      trapFrom(ANCHORS, "asked_tracking", "Cutting a campaign on a tracking gap", "tracking"),
-      trapFrom(ANCHORS, "brand_capped", "Scaling brand search on its headline ROAS", "brand-roas"),
-      trapFrom(ANCHORS, "no_banned_claims", "Running a guarantee or cure claim", "claims"),
-      trapFrom(ANCHORS, "pushed_back_client", "Giving in to the client's claim", "client-claim"),
+      trapFrom(ANCHORS, "asked_tracking", "Cutting a campaign on a tracking gap", "tracking", `cutting Landing B on its zero would have killed a campaign that really produced about ${camp.trueConv} orders`),
+      trapFrom(ANCHORS, "brand_capped", "Scaling brand search on its headline ROAS", "brand-roas", `Brand Search looks great, but ${g.brandShare}% of its buyers already knew the brand, so extra budget buys little new demand`),
+      trapFrom(ANCHORS, "no_banned_claims", "Running a guarantee or cure claim", "claims", "a guaranteed-cure ad would be rejected by the platform and could draw complaints against the brand"),
+      trapFrom(ANCHORS, "pushed_back_client", "Giving in to the client's claim", "client-claim", "agreeing to an unsafe claim puts the account and the brand at risk"),
     ],
     judgeContext: `A junior digital marketing associate at ${COMPANY} reviews a 30-day Google Ads export. Metrics: CTR, CPC, conversion rate, CPA, ROAS. Landing B shows zero conversions because its conversion tag was removed on ${g.tagDate} (about ${camp.trueConv} real orders); Brand Search ROAS ${g.camps[0]!.roas} is flattering because ${g.brandShare}% would have bought anyway. Next month's budget is ₹${g.budget} with at least ₹${g.test} for tests; rank the rest by ROAS (${g.order.join(", then ")}). The client demands an ad "guaranteed to cure acne in 7 days"; the associate must refuse with a reason and write compliant copy: headline up to 30 characters, description up to 90, an approved claim (dermatologist-tested or 2% niacinamide) and a call to action.`,
     onSubmit: async (ctx): Promise<SubmitReaction> => {

@@ -393,12 +393,13 @@ Write each decision as a short record: context, options, decision, reasons, and 
       { id: "data", text: s.hidden, knownBy: ["arjun", "priya"], leak: [/2,?500 writes/i] },
     ],
     cost: { message: 4, open: 2, checks: 0, submit: 15, advance: 25 },
+    trust: { priya: ["asked_load", "asked_constraints", "asked_data_shape", "requirements_in_adr"], arjun: ["asked_evidence", "explained_disagreement", "did_not_yield", "choice_fits_data"], rohan: ["asked_evidence", "did_not_yield", "compute_fits_team"] },
     activeSkills: drill ? [drill.skillId] : DECISION_SKILLS.map((x) => x.id),
     traps: [
-      trapFrom(ANCHORS, "asked_load", "Designing without asking about load", "no-load"),
-      trapFrom(ANCHORS, "choice_fits_data", "A data store that does not fit the data", "wrong-store"),
-      trapFrom(ANCHORS, "compute_fits_team", "An always-on cluster for a five-person team", "overbuilt"),
-      trapFrom(ANCHORS, "did_not_yield", "Giving way to fashion or seniority", "yielded"),
+      trapFrom(ANCHORS, "asked_load", "Designing without asking about load", "no-load", (() => `a design for the wrong load: the ${g.saleHours}-hour sale peaks at ${g.peakRps} requests a second, about ${Math.round(g.peakRps / g.normalRps)} times normal traffic, and nobody had said so`)()),
+      trapFrom(ANCHORS, "choice_fits_data", "A data store that does not fit the data", "wrong-store", `a data store that fights how the data is really used. ${s.hidden}`),
+      trapFrom(ANCHORS, "compute_fits_team", "An always-on cluster for a five-person team", "overbuilt", `an always-on cluster would cost about ₹${g.costGke.toLocaleString("en-IN")} a month against a ₹${g.budget.toLocaleString("en-IN")} budget, and nobody on a five-person team could run it at 2 am`),
+      trapFrom(ANCHORS, "did_not_yield", "Giving way to fashion or seniority", "yielded", "a design chosen because someone senior or fashionable said so, with no reasons on record to defend it in review"),
     ],
     judgeContext: `A new software engineer must recommend how to build ${s.feature}: where the data lives and how it runs and scales. Facts: ${s.hidden} Normal traffic ${g.normalRps} requests a second, sale peak ${g.peakRps} for ${g.saleHours} hours, one instance handles ${g.cap}, so ${g.instPeak} instances at peak. Scaling with demand costs about ₹${g.costServerless} a month; an always-on cluster sized for peak about ₹${g.costGke} against a ₹${g.budget} budget; the team is ${g.teamSize} with no operations engineer. A colleague pushes a fashionable choice. The right behaviour: ask for load, data shape, budget and team first; compare options against criteria; size with numbers; write decision records; reply to pushing colleagues with reasons and do not give way without them; and change the design when new evidence arrives (${s.twist}).`,
     onSubmit: async (ctx): Promise<SubmitReaction> => {

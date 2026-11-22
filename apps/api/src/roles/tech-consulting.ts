@@ -304,12 +304,13 @@ Use the finance ledger revenue unless told otherwise, and say which source you u
     },
     facts: [{ id: "mix-answer", text: `The margin fall is mostly mix shift (${g.mixShare}% of the drop).`, knownBy: ["rhea"], leak: [/mix shift/i, /\d+% of the drop/i] }],
     cost: { message: 3, open: 1, checks: 0, submit: 10, advance: 10 },
+    trust: { rhea: ["asked_objective", "tree_branches", "bridge_values", "first_line_answer"], sethi: ["stated_confidence", "no_direct_yes", "concise_respectful"], imran: ["flags_discrepancy"] },
     activeSkills: drill ? [drill.skillId] : SKILLS.map((s) => s.id),
     traps: [
-      trapFrom(ANCHORS, "cites_mix", "Blaming supplier prices", "supplier-price"),
-      trapFrom(ANCHORS, "numbers_tie", "Numbers that do not tie", "numbers"),
-      trapFrom(ANCHORS, "flags_discrepancy", "Unflagged data conflict", "data-conflict"),
-      trapFrom(ANCHORS, "no_direct_yes", "Scope creep from the client", "scope-creep"),
+      trapFrom(ANCHORS, "cites_mix", "Blaming supplier prices", "supplier-price", `telling the client it is supplier prices would have started contract renegotiations that cannot fix a problem that is ${g.mixShare}% mix shift`),
+      trapFrom(ANCHORS, "numbers_tie", "Numbers that do not tie", "numbers", "a number that does not tie to the data would have undermined every other number in front of the client CFO"),
+      trapFrom(ANCHORS, "flags_discrepancy", "Unflagged data conflict", "data-conflict", `finance and operations revenue differ by about ₹${r1(g.ops - g.fin)} crore, so an unflagged rupee impact could be wrong`),
+      trapFrom(ANCHORS, "no_direct_yes", "Scope creep from the client", "scope-creep", "agreeing to an extra store-staffing analysis by Monday would have been unplanned, out-of-scope work promised without your manager"),
     ],
     judgeContext: `A graduate consultant must explain a margin fall of ${r1(g.drop)} points. The true cause is mostly mix shift (${g.mixShare}% of the drop), not supplier prices. Finance and ops revenue totals disagree by about 2%. The client CFO jumps to supplier prices and asks for an out-of-scope store-staffing analysis.`,
     onSubmit: async (ctx) => {

@@ -251,12 +251,13 @@ function build(args: { variantIndex: number; vars: Vars; drill?: DrillDef }): Mi
       { id: "sample", text: `${g.exceptions.length} exceptions in ${g.n} payments, ₹${g.total} lakh in total.`, knownBy: ["ananya"], leak: [new RegExp(`${g.exceptions.length}\\s+exceptions`, "i")] },
     ],
     cost: { message: 4, open: 2, checks: 0, submit: 15, advance: 25 },
+    trust: { ananya: ["asked_before_testing", "found_all", "finding_parts", "told_manager"], bhatia: ["pushed_back_reason", "kept_rating"], kiran: ["declined_draft"] },
     activeSkills: drill ? [drill.skillId] : CONTROL_SKILLS.map((s) => s.id),
     traps: [
-      trapFrom(ANCHORS, "found_all", "Missing an exception", "missed-exception"),
-      trapFrom(ANCHORS, "sample_caveat", "Generalising from a sample", "sample-generalised"),
-      trapFrom(ANCHORS, "kept_rating", "Softening a finding under pressure", "softened"),
-      trapFrom(ANCHORS, "declined_draft", "Sharing a draft with the client", "leaked-draft"),
+      trapFrom(ANCHORS, "found_all", "Missing an exception", "missed-exception", `${g.exceptions.length} exceptions worth ₹${g.total} lakh sit in this sample; any you miss stay in the client's payment process`),
+      trapFrom(ANCHORS, "sample_caveat", "Generalising from a sample", "sample-generalised", `claiming every payment fails from a ${g.n}-payment sample cannot be defended`),
+      trapFrom(ANCHORS, "kept_rating", "Softening a finding under pressure", "softened", "calling a duplicate payment a timing issue would have hidden a real control failure and broken your independence"),
+      trapFrom(ANCHORS, "declined_draft", "Sharing a draft with the client", "leaked-draft", "sharing a draft with someone at the client breaks confidentiality and independence"),
     ],
     judgeContext: `A junior advisory analyst reviews a sample of ${g.n} payments against a four-part control (PO, approval limit ₹1.0 lakh, segregation of duties, no duplicates). There are ${g.exceptions.length} exceptions worth ₹${g.total} lakh in total; ${g.high} are High under the rating rule (duplicate, self-approval or over ₹2.0 lakh). The analyst must list every exception with the right type and rating, write an observation / risk / recommendation that is honest it is a sample, resist the client controller's request to call the duplicate a timing issue and rate it Low, and refuse to send the draft to a friendly junior at the client, then tell their manager.`,
     onSubmit: async (ctx): Promise<SubmitReaction> => {

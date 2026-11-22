@@ -1,10 +1,11 @@
 import { randomBytes } from "node:crypto";
-import type { ConsequenceNote, Evidence, MissionEvent, NextStep, Report, SignalHit, SkillResult } from "@ayden/contract";
+import type { Calibration, CloseCall, ConsequenceNote, Evidence, MissionEvent, NextStep, Report, SignalHit, SkillResult } from "@ayden/contract";
 import { runJudge } from "../agents/judge.js";
 import { rankBySimilarity } from "../agents/weaver.js";
 import { config } from "../config.js";
 import type { Deps } from "./engine.js";
 import { firstSentence, quoteVerified } from "./text.js";
+import { TRUST_LABELS, computeTrust } from "./trust.js";
 import type { AnchorDef, MissionBuild, RolePack, ScoreCtx, Session, StoredReport, UserRec } from "./types.js";
 
 export function confidenceGap(selfRating: number | null, ratio: number): SkillResult["confidenceGap"] {
@@ -13,6 +14,29 @@ export function confidenceGap(selfRating: number | null, ratio: number): SkillRe
   if (expected - ratio > 0.3) return "overestimated";
   if (ratio - expected > 0.3) return "underestimated";
   return "aligned";
+}
+
+/** Compares the rating given before the mission with what the learner showed. Rewards judging yourself accurately, not scoring high. */
+export function calibrationOf(skills: SkillResult[]): Calibration | undefined {
+  const rated = skills.filter((s) => s.selfRating !== null && s.signals.length > 0 && s.anchorsTotal > 0);
+  if (!rated.length) return undefined;
+  const rows = rated.map((s) => ({ skillId: s.skillId, label: s.label, said: Math.round(((s.selfRating! - 1) / 4) * 100), showed: Math.round((s.anchorsMet / s.anchorsTotal) * 100), met: s.anchorsMet, total: s.anchorsTotal }));
+  const diffs = rows.map((r) => r.said - r.showed);
+  const meanAbs = diffs.reduce((a, d) => a + Math.abs(d), 0) / diffs.length;
+  const meanSigned = diffs.reduce((a, d) => a + d, 0) / diffs.length;
+  const score = Math.max(0, Math.round(100 - meanAbs));
+  const verdict: Calibration["verdict"] = meanAbs <= 20 ? "well-calibrated" : meanSigned >= 15 ? "overconfident" : meanSigned <= -15 ? "underconfident" : "mixed";
+  const worst = [...rows].sort((a, b) => Math.abs(b.said - b.showed) - Math.abs(a.said - a.showed))[0]!;
+  const rated5 = rated.find((s) => s.skillId === worst.skillId)!.selfRating!;
+  const summary =
+    verdict === "well-calibrated"
+      ? "You judged yourself accurately before you started. That is a real skill at work: people who know where they stand ask for help at the right time."
+      : verdict === "overconfident"
+        ? `You rated yourself higher than you showed. Biggest gap: ${worst.label.toLowerCase()} (you rated ${rated5} of 5, you showed ${worst.met} of ${worst.total} behaviours). That is the useful finding.`
+        : verdict === "underconfident"
+          ? `You showed more than you expected. Biggest gap: ${worst.label.toLowerCase()} (you rated ${rated5} of 5, you showed ${worst.met} of ${worst.total} behaviours). Trust your preparation a little more.`
+          : `Some of your ratings were too high and some too low. Biggest gap: ${worst.label.toLowerCase()} (you rated ${rated5} of 5, you showed ${worst.met} of ${worst.total} behaviours).`;
+  return { score, verdict, summary, skills: rows };
 }
 
 export function skillState(met: number, target: number): "strong" | "developing" | "gap" {
@@ -145,6 +169,13 @@ export async function buildReport(deps: Deps, args: { session: Session; build: M
 
   const traps = build.traps.map((t) => ({ id: t.id, label: t.label, missed: t.missed(ctx) }));
   const usedJudge = !!judge;
+  const closeCalls: CloseCall[] =
+    session.kind === "mission"
+      ? build.traps.filter((t) => t.impact).map((t) => ({ id: t.id, label: t.label, caught: !t.missed(ctx), cost: typeof t.impact === "function" ? t.impact(ctx) : t.impact! }))
+      : [];
+  const trustNow = computeTrust({ build, anchors: role.anchors, session, events, artifacts, finalChecks });
+  const colleagueTrust = build.people.filter((p) => build.trust?.[p.id]).map((p) => ({ personId: p.id, name: p.name, level: (trustNow[p.id] ?? 0) as 0 | 1 | 2, label: TRUST_LABELS[trustNow[p.id] ?? 0]! }));
+  const calibration = calibrationOf(skills);
   const report: StoredReport = {
     id: "r_" + randomBytes(5).toString("base64url").replace(/[-_]/g, "x"),
     missionId: session.id,
@@ -169,6 +200,9 @@ export async function buildReport(deps: Deps, args: { session: Session; build: M
         ...(role.safetyNote ? [role.safetyNote] : []),
       ],
     },
+    ...(calibration ? { calibration } : {}),
+    ...(closeCalls.length ? { closeCalls } : {}),
+    ...(colleagueTrust.length ? { colleagueTrust } : {}),
     privacyNote: "Only you can see this report.",
     shareSummary: `I rehearsed a ${role.title.replace(/ \(.*\)/, "").toLowerCase()} scenario on Ayden. ${strong.length ? `Strength: ${strong[0]!.label.toLowerCase()}.` : "I finished the full scenario."} ${first ? `Working on: ${first.label.toLowerCase()}.` : ""}`.trim(),
     uid: user.id,

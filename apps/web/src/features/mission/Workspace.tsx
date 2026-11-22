@@ -256,7 +256,7 @@ export default function Workspace() {
       <ul className="rail-list">
         {people.map((p) => (
           <li key={p.id}>
-            <button type="button" className={`rail-item ${thread === p.id && centerTab === "chat" ? "active" : ""}`} aria-current={thread === p.id ? "true" : undefined} onClick={() => { setThread(p.id); setCenterTab("chat"); setPane("chat"); }} title={p.modelLabel ? `${p.name} · ${p.modelLabel}` : p.name}>
+            <button type="button" className={`rail-item ${thread === p.id && centerTab === "chat" ? "active" : ""}`} aria-current={thread === p.id ? "true" : undefined} onClick={() => { setThread(p.id); setCenterTab("chat"); setPane("chat"); }} title={`${p.modelLabel ? `${p.name} · ${p.modelLabel}` : p.name}${p.trust ? ` · Trust: ${p.trust.label}` : ""}`}>
               <Avatar name={p.name} hue={p.avatarHue} size="sm" presence={p.presence} />
               <span className="rail-text"><span className="rail-name">{p.name}{p.kind === "agent" && <span className="ai-tag">{t("ws.ai")}</span>}</span><span className="rail-sub">{p.title}</span></span>
               {unread(p.id) && <span className="unread-dot" aria-label="unread" />}
@@ -508,7 +508,7 @@ function Conversation({ m, M, thread, centerTab, setCenterTab, hasEmail, personO
       )}
       <div className="conv-head">
         {centerTab === "email" ? <><Icon name="mail" /><span className="t-tm">{t("ws.email")}</span></> : toPerson ? (
-          <><Avatar name={toPerson.name} hue={toPerson.avatarHue} size="sm" presence={toPerson.presence} /><div className="stack"><span className="t-tm">{thread === "team" ? t("ws.teamChat") : toPerson.name}</span><span className="t-label t-secondary">{toPerson.title}{toPerson.modelLabel ? ` · ${toPerson.modelLabel}` : ""}</span></div></>
+          <><Avatar name={toPerson.name} hue={toPerson.avatarHue} size="sm" presence={toPerson.presence} /><div className="stack"><span className="t-tm">{thread === "team" ? t("ws.teamChat") : toPerson.name}</span><span className="t-label t-secondary">{toPerson.title}{toPerson.modelLabel ? ` · ${toPerson.modelLabel}` : ""}</span>{toPerson.trust && <span className={`trust-chip trust-${toPerson.trust.level}`} title="How much this colleague trusts you right now. It builds from what you do.">Trust: {toPerson.trust.label}</span>}</div></>
         ) : null}
       </div>
       <div className="conv-list" ref={listRef} onScroll={onScroll} role="log" aria-live="polite" aria-relevant="additions" tabIndex={0} aria-label={t("ws.chat")}>

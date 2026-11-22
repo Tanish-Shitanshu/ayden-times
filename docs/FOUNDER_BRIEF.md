@@ -76,8 +76,8 @@ A circuit breaker and a labelled scripted fallback keep it running, and a backup
 **"Why these roles?"**
 Each is a real entry or early-leadership role where the first weeks decide whether someone is trusted. See section 5.
 
-**"Who reviewed the nurse and banking content?"**
-No clinician or compliance professional has. The scenarios are simplified, fictional and labelled that way. Reviewing them with a nursing educator and a bank compliance officer is the first pilot step.
+**"Who reviewed the scenarios?"**
+No practitioner has yet. The scenarios are simplified, fictional and labelled that way. Having a finance, procurement and consulting practitioner review one role each is the first pilot step. We hid the nurse and banking roles because they need clinical and compliance review we cannot do yet.
 
 **"Who is the competition?"**
 Interview-prep and quiz apps test answers. Corporate simulation vendors are slow, bespoke and expensive per scenario. We are fast to author (a role pack is one file), cheap to run, and evidence-based. Be careful not to say "no competitors".
@@ -87,16 +87,20 @@ Say a specific ask. For example: introductions to two colleges for a 200-student
 
 ---
 
-## 5. The six roles: why each is relevant, and the honest limits
+## 5. The four roles: why each is relevant, and the honest limits
 
-| Role | Real job it rehearses | What it tests | Where it is strong | Honest limit |
-|---|---|---|---|---|
-| **Software Engineer** | First pull request at a product company | Asking before coding, tests, commits and PRs, handling a reviewer under deadline pressure | Code really runs and fails or passes in Google's sandbox; hidden checks | One codebase, two ticket types; not a full engineering day |
-| **Banking Operations (KYC and payments)** | Operations associate on a payments desk | Maker-checker (four-eyes), holding and escalating a screening hit, not tipping off a customer, audit-ready notes | Maps to real AML controls in Indian banks | Simplified fictional policy; not reviewed by compliance |
-| **Staff Nurse (ward)** | Night-shift handover | Early-warning escalation with SBAR, scope of practice, patient privacy, factual documentation | Realistic deterioration and a clear escalation rule | Simplified fictional score, not NEWS2; not reviewed by a clinician; never asks you to choose a drug or dose |
-| **Consulting Analyst** | First client project | Structuring a problem, answer-first writing, numbers that tie to data, scope control | A classic margin-mix problem with a data conflict | Retail margin case only |
-| **Startup CEO (new)** | First board cycle at a seed-stage startup | Deciding with runway numbers, writing a decision memo, disclosing a security incident, refusing to hide it, supporting a team member, a short honest investor update | Numbers vary per variant; the honest answer costs something, which is the lesson | Fictional company; a policy we wrote, not legal or financial advice |
-| **Data Analyst** | Planned | Real SQL on a BigQuery public dataset | Not built | Shown as "Planned" and not clickable |
+Full detail, checks and traps per role: `docs/ROLES_V2_DESIGN.md`.
+
+| Role | Real job it rehearses | What it tests (checked by code, not by the AI) | Honest limit |
+|---|---|---|---|
+| **Software Engineer** (2 missions) | A first pull request, and the first technical decisions | Real tests in Google's sandbox; data store, hosting, scale and cost chosen with numbers and written as decision records; resisting fashion; changing course on evidence | Not a full engineering day; one codebase |
+| **Junior Financial Analyst** | Quarter-end budget work | Variances from an Excel workbook, a one-off and a duplicate invoice, a split by profit per rupee, contingency kept, a CFO memo | Fictional company and policy; not reviewed by a finance practitioner |
+| **Procurement Trainee** | Choosing a vendor | Total cost of three bids, a hidden negotiation floor, declining a gift, resisting "just pick the cheapest" | Fictional vendors and policy; not reviewed by a procurement practitioner |
+| **Consulting and Advisory Analyst** (2 missions) | Strategy and Big-4 style first projects | Margin bridge (mix vs rate) in Excel, rupee impact and a recommendation; a controls review of a payment sample with risk ratings and an honest finding; independence under pressure | Practice for these kinds of firms, not affiliated with any; not reviewed by a practitioner |
+
+Hidden but built: Digital Marketing Associate. Hidden: Nurse, Startup CEO, Banking Operations, Data Analyst. Say "four roles"; do not claim the hidden ones.
+
+**What makes practice stick:** close calls (what a mistake you avoided would have cost), a calibration score (your own rating before the mission against what you showed; it rewards knowing where you stand, not scoring high), and colleague trust (it changes how they talk to you). No points and no leaderboards.
 
 ---
 

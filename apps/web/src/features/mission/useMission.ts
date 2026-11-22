@@ -31,7 +31,7 @@ function mergeTrace(prev: TraceEntry[], incoming: TraceEntry[]) {
 }
 function applyDelta(m: MissionState, d: StateDelta): MissionState {
   const changed = new Map<string, WorkItem>((d.changedItems ?? []).map((i) => [i.id, i]));
-  return { ...m, beat: d.beat, clock: d.clock, status: d.status, lastSeq: Math.max(m.lastSeq, d.lastSeq), canAdvance: d.canAdvance, canFinish: d.canFinish, attempt: d.attempt, artifacts: d.artifacts.length ? d.artifacts : m.artifacts, items: changed.size ? m.items.map((i) => changed.get(i.id) ?? i) : m.items };
+  return { ...m, beat: d.beat, clock: d.clock, status: d.status, lastSeq: Math.max(m.lastSeq, d.lastSeq), canAdvance: d.canAdvance, canFinish: d.canFinish, attempt: d.attempt, artifacts: d.artifacts.length ? d.artifacts : m.artifacts, items: changed.size ? m.items.map((i) => changed.get(i.id) ?? i) : m.items, people: d.trust ? m.people.map((p) => (d.trust![p.id] ? { ...p, trust: d.trust![p.id] } : p)) : m.people };
 }
 
 /** Loads a mission, sends actions idempotently, polls while agents are still replying. */

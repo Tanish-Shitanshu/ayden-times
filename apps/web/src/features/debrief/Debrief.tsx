@@ -1,3 +1,4 @@
+import { CloseCalls, Calibration, ColleagueTrust } from "./Engagement";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import "./debrief.css";
@@ -154,10 +155,16 @@ export default function Debrief() {
 
       <Celebrate report={report} missionId={missionId} />
 
+      <CloseCalls report={report} />
+
       <section aria-labelledby="sm-h">
         <h2 id="sm-h" className="t-tl" style={{ marginBottom: 16 }}>{t("debrief.skillMap")}</h2>
         <div className="skill-grid">{report.skills.map((s) => <SkillCard key={s.skillId} s={s} onQuote={setTranscript} />)}</div>
       </section>
+
+      <Calibration report={report} />
+
+      <ColleagueTrust report={report} />
 
       {report.keyMoments.length > 0 && (
         <section className="section" aria-labelledby="km-h">

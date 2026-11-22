@@ -13,6 +13,7 @@ import type {
   WorkItem,
 } from "@ayden/contract";
 import { agentRephrase, agentReply } from "../agents/persona.js";
+import { TRUST_LABELS, computeTrust, setTrust, trustOf } from "./trust.js";
 import type { LlmClient } from "../agents/llm.js";
 import type { Runner } from "../agents/sandbox.js";
 import { weave } from "../agents/weaver.js";
@@ -123,12 +124,14 @@ export function deltaOf(session: Session, build: MissionBuild): StateDelta {
     canFinish: session.status === "active" && session.beat === last && satisfied,
     attempt: session.attempt,
     artifacts: artifactSpecs(session, build),
+    ...(build.trust ? { trust: Object.fromEntries(Object.keys(build.trust).map((id) => [id, { level: (trustOf(session)[id] ?? 0) as 0 | 1 | 2, label: TRUST_LABELS[trustOf(session)[id] ?? 0]! }])) } : {}),
   };
 }
 
 export function toState(session: Session, build: MissionBuild): MissionState {
   const d = deltaOf(session, build);
-  const people: Person[] = build.people.map((p) => ({ id: p.id, name: p.name, title: p.title, kind: p.kind, avatarHue: p.hue, presence: "online", modelLabel: p.modelLabel, ...(p.language ? { language: p.language, languageName: p.languageName } : {}) }));
+  const trust = trustOf(session);
+  const people: Person[] = build.people.map((p) => ({ id: p.id, name: p.name, title: p.title, kind: p.kind, avatarHue: p.hue, presence: "online", modelLabel: p.modelLabel, ...(p.language ? { language: p.language, languageName: p.languageName } : {}), ...(build.trust?.[p.id] ? { trust: { level: (trust[p.id] ?? 0) as 0 | 1 | 2, label: TRUST_LABELS[trust[p.id] ?? 0]! } } : {}) }));
   return {
     id: session.id,
     roleId: session.roleId,
@@ -348,7 +351,7 @@ export async function act(deps: Deps, uid: string, sessionId: string, req: ActRe
   if (cached) return cached as ActResponse;
   if (session.status !== "active") throw new ApiError(409, "conflict", "This mission is finished.");
 
-  const { build } = buildFor(session);
+  const { build, role } = buildFor(session);
   const prior = await store.listEvents(session.id, 0);
   const events: MissionEvent[] = [];
   const tr: TraceEntry[] = [];
@@ -371,6 +374,7 @@ export async function act(deps: Deps, uid: string, sessionId: string, req: ActRe
       session.simMinute += build.cost.message;
       const flags = build.onLearnerMessage?.({ text, to: person.id, session, events: all() });
       if (flags) Object.assign(session.flags, flags);
+      setTrust(session, computeTrust({ build, anchors: role.anchors, session, events: all() }));
       if (build.detectCommitments && COMMIT_RE.test(text)) {
         session.commitments.push({ text: text.slice(0, 160), personId: person.id, atMinute: session.simMinute, seq: le.seq });
         tr.push(trace({ seq: le.seq, actor: "Engine", type: "signal", summary: "Commitment detected in your message and recorded in the ledger", verdict: "accepted" }));
@@ -514,6 +518,7 @@ export async function act(deps: Deps, uid: string, sessionId: string, req: ActRe
     }
   }
 
+  setTrust(session, computeTrust({ build, anchors: role.anchors, session, events: all() }));
   const seqTrace = tr.map((x, i) => ({ ...x, seq: x.seq ?? events[Math.min(i, events.length - 1)]?.seq ?? null }));
   const res: ActResponse = {
     accepted: !rejectedReason,

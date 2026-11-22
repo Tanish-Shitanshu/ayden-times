@@ -19,3 +19,17 @@
 .debrief-foot { position: sticky; bottom: 0; z-index: 50; background: color-mix(in srgb, var(--bg) 94%, transparent); backdrop-filter: blur(10px); border-top: 1px solid var(--outline); padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); margin-top: 48px; }
 .moment { display: flex; gap: 12px; align-items: flex-start; }
 .next-card { display: flex; flex-direction: column; gap: 8px; }
+.cc-card { display: flex; gap: 12px; align-items: flex-start; }
+.cc-card > .icon { font-size: 26px; flex: none; margin-top: 2px; }
+.cc-caught { border-color: var(--success); background: var(--success-bg); }
+.cc-caught > .icon { color: var(--success); }
+.cc-missed > .icon { color: var(--warning); }
+.cal-score { display: flex; align-items: baseline; gap: 4px; min-width: 96px; }
+.cal-score .num { font-size: 48px; line-height: 1; font-weight: 500; font-variant-numeric: tabular-nums; }
+.cal-score small { font-size: 16px; color: var(--text-secondary); }
+.cal-row { display: grid; grid-template-columns: minmax(120px, 200px) 1fr; gap: 12px; align-items: center; }
+@media (max-width: 599px) { .cal-row { grid-template-columns: 1fr; gap: 4px; } }
+.cal-bars { display: flex; flex-direction: column; gap: 4px; }
+.cal-bar { height: 20px; border-radius: 6px; display: flex; align-items: center; padding: 0 8px; font-size: 12px; color: #fff; white-space: nowrap; overflow: hidden; }
+.cal-bar.said { background: var(--text-secondary); }
+.cal-bar.showed { background: var(--primary); }

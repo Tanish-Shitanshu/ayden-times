@@ -35,9 +35,10 @@ export const sys = (body: string, extra: Partial<ScriptedEvent> = {}): ScriptedE
 export const hit = (e: MissionEvent | undefined, re?: RegExp, note?: string): AnchorHit =>
   e ? { met: true, seq: e.seq, quote: quoteOf(e, re), note } : { met: false, note };
 
-export const trapFrom = (anchors: AnchorDef[], anchorId: string, label: string, id = anchorId): TrapDef => ({
+export const trapFrom = (anchors: AnchorDef[], anchorId: string, label: string, id = anchorId, impact?: TrapDef["impact"]): TrapDef => ({
   id,
   label,
+  ...(impact ? { impact } : {}),
   missed: (ctx) => {
     const a = anchors.find((x) => x.id === anchorId);
     return a ? !a.eval(ctx).met : false;

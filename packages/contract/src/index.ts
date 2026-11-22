@@ -178,6 +178,8 @@ export interface Person {
   /** Set when this colleague speaks another language (Cloud Translation bridges the gap). */
   language?: string;
   languageName?: string;
+  /** How much this colleague trusts the learner right now, from what the learner has shown so far. Absent when the scenario does not track it. */
+  trust?: { level: 0 | 1 | 2; label: string };
 }
 
 export type WorkItem =
@@ -299,6 +301,8 @@ export interface StateDelta {
   artifacts: ArtifactSpec[];
   /** Only items that changed (e.g. a file the learner saved, a new ticket revealed). */
   changedItems?: WorkItem[];
+  /** Colleague trust right now, by person id. Present only when the scenario tracks it. */
+  trust?: Record<string, { level: 0 | 1 | 2; label: string }>;
 }
 
 export interface ActResponse {
@@ -389,6 +393,28 @@ export interface Report {
   integrity: IntegrityInfo;
   privacyNote: string; // "Only you can see this report."
   shareSummary: string; // opt-in, positive-only text the learner may copy
+  /** The self-rating given before the mission, compared with what the learner showed. Absent without self-ratings. */
+  calibration?: Calibration;
+  /** Traps the learner avoided (caught) or fell into, each with what it would have cost. */
+  closeCalls?: CloseCall[];
+  /** Where each colleague's trust ended up. */
+  colleagueTrust?: { personId: string; name: string; level: 0 | 1 | 2; label: string }[];
+}
+
+export interface Calibration {
+  /** 0 to 100. High means the learner judged themselves accurately; it is not a skill score. */
+  score: number;
+  verdict: "well-calibrated" | "overconfident" | "underconfident" | "mixed";
+  summary: string;
+  skills: { skillId: SkillId; label: string; said: number; showed: number; met: number; total: number }[];
+}
+
+export interface CloseCall {
+  id: string;
+  label: string;
+  caught: boolean;
+  /** What the mistake would have cost, in plain words. */
+  cost: string;
 }
 
 /* ───────────── progress, milestones, badges ───────────── */

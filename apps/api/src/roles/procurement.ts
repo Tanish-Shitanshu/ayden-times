@@ -293,12 +293,13 @@ function build(args: { variantIndex: number; vars: Vars; drill?: DrillDef }): Mi
       { id: "needby", text: `Delivery within ${g.needBy} days.`, knownBy: ["priyanka"], leak: [] },
     ],
     cost: { message: 4, open: 2, checks: 0, submit: 15, advance: 25 },
+    trust: { priyanka: ["asked_need_by", "tco_values", "pushed_back_reason", "award_first"], arun: ["asked_history", "declined_gift"], vikram: ["reason_for_discount", "traded_more_than_price", "realistic_ask"] },
     activeSkills: drill ? [drill.skillId] : SKILLS.map((s) => s.id),
     traps: [
-      trapFrom(ANCHORS, "tco_values", "Choosing on sticker price", "sticker-price"),
-      trapFrom(ANCHORS, "asked_history", "Trusting a quote without checking the vendor", "no-diligence"),
-      trapFrom(ANCHORS, "declined_gift", "Accepting a gift in a live bid", "gift"),
-      trapFrom(ANCHORS, "did_not_rush", "Picking the cheapest to save time", "rushed"),
+      trapFrom(ANCHORS, "tco_values", "Choosing on sticker price", "sticker-price", g.cheapest.id !== g.winner.id ? `picking the lowest-priced bid (Vendor ${g.cheapest.id}) would have cost ${money(g.cheapest.tco - g.winner.tco)} more in total than ${g.winner.name}` : "the lowest price is not automatically the lowest total cost: warranty gaps and late delivery add up"),
+      trapFrom(ANCHORS, "asked_history", "Trusting a quote without checking the vendor", "no-diligence", `a vendor that delivered on time only ${g.onTime}% of the time would have surprised you after the order`),
+      trapFrom(ANCHORS, "declined_gift", "Accepting a gift in a live bid", "gift", `accepting a ${money(g.gift)} gift in a live bid is a conflict of interest and breaks policy`),
+      trapFrom(ANCHORS, "did_not_rush", "Picking the cheapest to save time", "rushed", "a vendor chosen in a rush, with no total-cost numbers and no record to defend it"),
     ],
     judgeContext: `A procurement trainee at ${COMPANY} must choose between three bids for ${g.qty} ${g.item}. Sticker-price cheapest is Vendor ${g.cheapest.id}, but on total cost (warranty gap, late delivery, fees) the best is ${w.name} at ${money(w.tco)}. Vendor A's on-time record is ${g.onTime}% (only if asked). The learner should compare on total cost, check the vendors, negotiate with ${wRepName} using a reason and a give (never below the floor of ${money(g.floor)}), decline a ${money(g.gift)} gift and tell the manager, push back politely on 'just pick the cheapest', and write a short award memo.`,
     onSubmit: async (ctx): Promise<SubmitReaction> => {
