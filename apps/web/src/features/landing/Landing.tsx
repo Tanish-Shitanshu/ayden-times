@@ -18,14 +18,14 @@ export default function Landing() {
       <section className="hero">
         <div className="container hero-grid">
           <div>
-            <span className="hero-eyebrow"><span className="dot" />MVP in progress · built at the Delhi City Buildathon</span>
-            <h1 className="t-display page-title">Rehearse your <span className="accent">first 90 days.</span></h1>
-            <p className="hero-sub">{content.hero.sub}</p>
+            <span className="hero-eyebrow"><span className="dot" />{t("hero.eyebrow")}</span>
+            <h1 className="t-display page-title">{t("hero.pre") ? <>{t("hero.pre")} </> : null}<span className="accent">{t("hero.accent")}</span></h1>
+            <p className="hero-sub">{t("hero.sub")}</p>
             <div className="hero-cta">
-              <LinkButton to="/demo" size="lg" icon="play_arrow">{content.hero.cta}</LinkButton>
-              <LinkButton to="/how-it-works" size="lg" variant="outlined">{content.hero.secondary}</LinkButton>
+              <LinkButton to="/demo" size="lg" icon="play_arrow">{t("hero.cta")}</LinkButton>
+              <LinkButton to="/how-it-works" size="lg" variant="outlined">{t("hero.secondary")}</LinkButton>
             </div>
-            <p className="hero-note"><Icon name="lock" className="sm" />{content.hero.note}</p>
+            <p className="hero-note"><Icon name="lock" className="sm" />{t("hero.note")}</p>
             <TractionStrip />
           </div>
           <LiveShift />

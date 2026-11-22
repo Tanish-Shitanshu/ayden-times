@@ -1,6 +1,6 @@
 import type { Lang } from "../contract";
 
-/** Interface languages. Hindi and English are written by hand; the rest are translated by Google Cloud Translation. */
+/** Interface languages. English, Hindi and Telugu are written by hand; the rest are translated by Google Cloud Translation. */
 export const UI_LANGUAGES: { code: Lang; native: string; english: string }[] = [
   { code: "en", native: "English", english: "English" },
   { code: "hi", native: "हिन्दी", english: "Hindi" },
@@ -16,6 +16,6 @@ export const UI_LANGUAGES: { code: Lang; native: string; english: string }[] = [
   { code: "pa", native: "ਪੰਜਾਬੀ", english: "Punjabi" },
   { code: "as", native: "অসমীয়া", english: "Assamese" },
 ];
-export const isHandWritten = (l: string) => l === "en" || l === "hi";
+export const isHandWritten = (l: string) => l === "en" || l === "hi" || l === "te";
 export const RTL = new Set(["ur"]);
 export const nativeName = (code: string) => UI_LANGUAGES.find((l) => l.code === code)?.native ?? code;

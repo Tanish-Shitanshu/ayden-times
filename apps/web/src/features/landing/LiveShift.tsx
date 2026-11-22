@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Avatar, Icon } from "../../design/components";
 import { BadgeArt } from "../game/BadgeArt";
+import { useT } from "../../lib/i18n";
 
 /**
  * A self-playing preview of one shift, so a visitor sees what doing the simulation feels like:
@@ -8,10 +9,10 @@ import { BadgeArt } from "../game/BadgeArt";
  */
 
 const STEPS = [
-  { id: "ask", label: "Ask", clock: "Wed 09:30", goal: "Read the ticket. Ask before you touch the code." },
-  { id: "fix", label: "Fix", clock: "Wed 11:10", goal: "Make the change a teammate can follow." },
-  { id: "test", label: "Test", clock: "Wed 14:05", goal: "Run the real checks. Read what fails." },
-  { id: "proof", label: "Proof", clock: "Wed 17:30", goal: "See what your own words and work showed." },
+  { id: "ask", label: "live.ask", clock: "Wed 09:30", goal: "live.goal0" },
+  { id: "fix", label: "live.fix", clock: "Wed 11:10", goal: "live.goal1" },
+  { id: "test", label: "live.test", clock: "Wed 14:05", goal: "live.goal2" },
+  { id: "proof", label: "live.proof", clock: "Wed 17:30", goal: "live.goal3" },
 ] as const;
 
 const CHECKS = ["bulk order discount applied once", "single item unchanged", "no discount on one unit", "rounding to the paisa", "quantity zero", "negative quantity rejected", "large order under 1s"];
@@ -69,6 +70,7 @@ function Scene({ i }: { i: number }) {
 }
 
 export function LiveShift() {
+  const t = useT();
   const [step, setStep] = useState(0);
   const [paused, setPaused] = useState(false);
   const [still, setStill] = useState(false);
@@ -91,17 +93,17 @@ export function LiveShift() {
         <span className="ls-title">Day 3 at Meridian Labs</span>
         <span className="ls-clock"><Icon name="schedule" className="sm" />{cur.clock}</span>
       </div>
-      <div className="ls-goal" aria-live="off"><span className="ls-step">Step {step + 1} of {STEPS.length}</span><b>{cur.goal}</b></div>
+      <div className="ls-goal" aria-live="off"><span className="ls-step">{t("live.step", { n: step + 1, m: STEPS.length })}</span><b>{t(cur.goal)}</b></div>
       <div className="ls-stage" aria-hidden="true"><Scene i={step} /></div>
       <div className="ls-track" role="tablist" aria-label="Preview steps">
         {STEPS.map((s, k) => (
           <button key={s.id} role="tab" aria-selected={k === step} className={`ls-tab${k === step ? " on" : ""}${k < step ? " done" : ""}`} onClick={() => setStep(k)}>
-            <span className="ls-num">{k < step ? <Icon name="check" className="sm" /> : k + 1}</span>{s.label}
+            <span className="ls-num">{k < step ? <Icon name="check" className="sm" /> : k + 1}</span>{t(s.label)}
             {k === step && !paused && !still && <span className="ls-prog" key={`${step}-${paused}`} />}
           </button>
         ))}
       </div>
-      <p className="ls-foot">A scripted example from the Software Engineer simulation. You play it for real in about 25 minutes.</p>
+      <p className="ls-foot">{t("live.foot")}</p>
     </div>
   );
 }

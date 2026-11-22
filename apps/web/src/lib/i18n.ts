@@ -1,5 +1,6 @@
 import { en, type I18nKey } from "../i18n/en";
 import { hi } from "../i18n/hi";
+import { te } from "../i18n/te";
 import { dicts } from "./dict";
 import type { Lang } from "../contract";
 import { useApp } from "../app/store";
@@ -8,7 +9,7 @@ import type { ApiFailure } from "../api/client";
 export type T = (key: I18nKey, vars?: Record<string, string | number>) => string;
 
 export function translate(lang: Lang, key: I18nKey, vars?: Record<string, string | number>) {
-  const s: string = (lang === "hi" ? hi[key] : lang === "en" ? en[key] : dicts[lang]?.[key]) ?? en[key] ?? key;
+  const s: string = (lang === "hi" ? hi[key] : lang === "te" ? te[key] : lang === "en" ? en[key] : dicts[lang]?.[key]) ?? en[key] ?? key;
   return vars ? s.replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? `{${k}}`)) : s;
 }
 

@@ -64,3 +64,40 @@ Example sentence for the room: *"Practice costs us about [live number] an hour. 
 ## 5. If asked "why BigQuery"
 
 It stores an anonymous row per finished mission (role, skill, state, no names, no text). It lets a college ask "which skill is weakest across my batch" without ever touching individual learner data. At our scale it is inside the free tier. It is off the learner's critical path, so an outage would not stop a rehearsal. If it ever became costly, we would aggregate in Firestore instead.
+
+## 6. The whole architecture, priced by scale (estimates, rupees at ₹88 to the dollar)
+
+Assumes each learner practises about 3 hours in a semester, AI cost of ₹7 to ₹12 an hour (safety margin up to ₹22), and the infrastructure in section 2 growing as traffic grows. These are planning numbers, not quotes. Replace them with the live figures on `/traction` and the real Google Cloud bill as soon as there is data.
+
+| Active learners in a semester | AI cost (3 h each) | Infrastructure for 6 months | Total cost | If a college pays ₹250 per student | Cost per learner |
+|---|---|---|---|---|---|
+| 100 (a pilot) | ₹2,100 to ₹3,600 (up to ₹6,500) | about ₹6,300 | about ₹8,400 to ₹12,800 | ₹25,000 | ₹84 to ₹128 |
+| 1,000 | ₹21,000 to ₹36,000 (up to ₹65,000) | about ₹21,000 (a few warm instances, more Firestore) | about ₹42,000 to ₹86,000 | ₹2,50,000 | ₹42 to ₹86 |
+| 10,000 | ₹2.1 to ₹3.6 lakh (up to ₹6.5 lakh) | about ₹1.6 lakh | about ₹3.7 to ₹8.1 lakh | ₹25,00,000 | ₹37 to ₹81 |
+
+How to read it: the **fixed cost is small and shared**, so cost per learner falls as more people use it. At 100 learners the fixed part dominates; at 10,000 the AI part dominates.
+
+**What is in the bill:** Cloud Run (the app), Firestore (data), Gemini (the colleagues, judge and sandbox), Secret Manager, logging, Cloud Translation for the other Indian languages, a little storage. **What is not in it:** people, marketing, payment fees, GST, support, and the human review that the nurse and banking packs still need from a clinician and a compliance professional. Say so if asked.
+
+**Break-even on running costs:** about 30 paying students in a semester cover the fixed infrastructure (₹6,300 ÷ about ₹214 margin per student). Everything above that is margin, before the team's own costs.
+
+## 7. Cost per hour of use, the sentence for the pitch
+
+> "One hour of practice costs us about **₹7 to ₹12** in AI. We expect to charge about **₹80 an hour** (₹250 for a student's three hours). We have measured the cost, we have not yet validated the price."
+
+Quote the measured figure from `/traction` instead of the range once about ten missions have run.
+
+## 8. Ways to start earning (hypotheses to test, in this order)
+
+| # | Model | Who pays | Idea | Why it fits |
+|---|---|---|---|---|
+| 1 | **Campus licence** | Placement cell or department | ₹150 to ₹400 per student per semester, minimum 100 students. Pilot first at a discount | One buyer, many learners, and the cohort view (anonymous patterns) is something they cannot build themselves. Cost to serve is under ₹65 |
+| 2 | **Onboarding packs** | An employer, per new hire | ₹1,500 to ₹3,000 per hire for a role pack, plus a one-time setup fee for a custom pack (for example a bank's own procedures) | Higher price, same engine. The setup fee pays for the human who writes and reviews the pack |
+| 3 | **Learner plan** | The learner | Free: one quick mission a month. **Plus**: ₹149 a month with a fair-use cap of about 8 hours | Worst case the cap costs ₹56 to ₹99 in AI, a typical learner costs ₹20 to ₹40. After 18% GST and about 2% gateway fees, ₹149 leaves about ₹123 |
+| 4 | **Verified work sample** | The learner, later | The shareable evidence page and certificate stay free for everyone. A paid tier could add employer-facing portfolios | Free sharing is what spreads the product. Do not charge for the certificate itself |
+
+Rules we are keeping: no leaderboards, no selling individual results to employers without the learner's consent, and the "practice, not a hiring score" label stays on every certificate.
+
+**What to say if asked "have you validated any of this":** no. The AI cost is measured; the prices are hypotheses; the pilot with about 50 testers and the feedback form is how we start finding out. Ask them a pricing question in the form next time.
+
+**Credits:** Google for Startups has a cloud programme that gives credits to eligible startups. Check eligibility before the pitch; credits would cover the fixed cost for a long time, but do not present them as revenue.

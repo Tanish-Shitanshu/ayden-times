@@ -3,6 +3,7 @@ import qrcode from "qrcode-generator";
 import type { WorkSample } from "../../api/client";
 import { Button } from "../../design/components";
 import { copyText } from "../../lib/hooks";
+import { useT } from "../../lib/i18n";
 import { BadgeArt } from "../game/BadgeArt";
 import "./share.css";
 
@@ -85,6 +86,7 @@ export function CertificateSvg({ s, url, svgRef }: { s: WorkSample; url: string;
 
 /** Preview with download (PNG) and print (PDF). */
 export function Certificate({ sample }: { sample: WorkSample }) {
+  const t = useT();
   const ref = useRef<SVGSVGElement>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -155,17 +157,17 @@ export function Certificate({ sample }: { sample: WorkSample }) {
     <div className="cert-block">
       <div className="cert-wrap"><CertificateSvg s={sample} url={url} svgRef={ref} /></div>
       <div className="row gap-12 wrap cert-actions">
-        <Button icon="download" loading={busy} onClick={download}>Download certificate (PNG)</Button>
-        <Button variant="outlined" icon="print" onClick={() => window.print()}>Print or save as PDF</Button>
+        <Button icon="download" loading={busy} onClick={download}>{t("cert.download")}</Button>
+        <Button variant="outlined" icon="print" onClick={() => window.print()}>{t("cert.print")}</Button>
       </div>
       <div className="share-row" role="group" aria-label="Share your certificate">
-        <span className="t-label t-secondary">Share in one click</span>
-        <Button size="sm" variant="tonal" icon="work" onClick={() => open(links.profile)}>Add to LinkedIn profile</Button>
-        <Button size="sm" variant="tonal" icon="share" onClick={() => open(links.post)}>Post on LinkedIn</Button>
+        <span className="t-label t-secondary">{t("cert.shareIn")}</span>
+        <Button size="sm" variant="tonal" icon="work" onClick={() => open(links.profile)}>{t("cert.linkedinProfile")}</Button>
+        <Button size="sm" variant="tonal" icon="share" onClick={() => open(links.post)}>{t("cert.linkedinPost")}</Button>
         <Button size="sm" variant="tonal" icon="chat" onClick={() => open(links.whatsapp)}>WhatsApp</Button>
         <Button size="sm" variant="tonal" icon="alternate_email" onClick={() => open(links.x)}>X</Button>
-        {canNative && <Button size="sm" variant="tonal" icon="ios_share" onClick={nativeShare}>Share image</Button>}
-        <Button size="sm" variant="text" icon={copied ? "check" : "link"} onClick={copy}>{copied ? "Copied" : "Copy link"}</Button>
+        {canNative && <Button size="sm" variant="tonal" icon="ios_share" onClick={nativeShare}>{t("cert.shareImage")}</Button>}
+        <Button size="sm" variant="text" icon={copied ? "check" : "link"} onClick={copy}>{copied ? t("common.copied") : t("share.copyLink")}</Button>
       </div>
       {err && <p className="t-bm" role="alert" style={{ color: "var(--error)" }}>{err}</p>}
     </div>

@@ -84,7 +84,7 @@ export default function RoleDetail() {
               </div>
             </div>
             {r.safetyNote && <Banner kind="warning" icon="health_and_safety">{r.safetyNote}</Banner>}
-            {lang === "hi" && <Banner kind="info" icon="translate">{t("role.englishOnly")}</Banner>}
+            {lang !== "en" && <Banner kind="info" icon="translate">{t("role.englishOnly")}</Banner>}
             <div>
               <Tabs idPrefix="role" label={r.title} value={tab} onChange={setTab} tabs={[
                 { id: "overview", label: t("role.tabs.overview") }, { id: "skills", label: t("role.tabs.skills") },

@@ -124,7 +124,7 @@ export default function Progress() {
             <section aria-labelledby="b-h">
               <div className="shelf-head">
                 <h2 id="b-h" className="t-tl">{t("progress.badges")}</h2>
-                <span className="shelf-count"><Icon name="workspace_premium" className="sm" fill />{p.badges.length} of {p.skills.length} earned</span>
+                <span className="shelf-count"><Icon name="workspace_premium" className="sm" fill />{t("badge.count", { a: p.badges.length, b: p.skills.length })}</span>
                 <div className="shelf-bar" role="progressbar" aria-label="Badges earned" aria-valuemin={0} aria-valuemax={p.skills.length} aria-valuenow={p.badges.length}><div style={{ width: `${p.skills.length ? (p.badges.length / p.skills.length) * 100 : 0}%` }} /></div>
               </div>
               <div className="badge-grid">
@@ -133,10 +133,10 @@ export default function Progress() {
                   return (
                     <div key={b.id} className="card badge-card badge-tile">
                       <BadgeArt roleId={b.roleId} skillId={b.skillId} title={b.title} size={104} tier={mastered ? "mastered" : "earned"} />
-                      <span className={`tier ${mastered ? "mastered" : "earned"}`}>{mastered ? "Mastered" : "Earned"}</span>
+                      <span className={`tier ${mastered ? "mastered" : "earned"}`}>{mastered ? t("tier.mastered") : t("tier.earned")}</span>
                       <h3 className="t-tm">{b.title}</h3>
                       <p className="t-bm t-secondary">{b.description}</p>
-                      <p className="t-label t-secondary">{t("progress.earned", { d: formatDate(b.earnedAt, lang) })}{mastered ? "" : " · repeat it on a fresh variant to master it"}</p>
+                      <p className="t-label t-secondary">{t("progress.earned", { d: formatDate(b.earnedAt, lang) })}{mastered ? "" : ` · ${t("badge.repeat")}`}</p>
                       {b.evidenceSeq ? <div><Button variant="text" size="sm" icon="format_quote" onClick={() => setEv({ missionId: b.missionId, seq: b.evidenceSeq! })}>{t("progress.seeEvidence")}</Button></div> : null}
                     </div>
                   );
@@ -144,9 +144,9 @@ export default function Progress() {
                 {p.skills.filter((s) => !p.badges.some((b) => b.skillId === s.skillId)).map((s) => (
                   <div key={s.skillId} className="card badge-card badge-tile locked">
                     <BadgeArt roleId={p.roleId} skillId={s.skillId} title={s.label} size={104} locked />
-                    <span className="tier locked">Locked</span>
+                    <span className="tier locked">{t("tier.locked")}</span>
                     <h3 className="t-tm">{s.label}</h3>
-                    <p className="t-bm t-secondary">Show {s.target} of {s.anchorsTotal} behaviours in your own words to earn it.</p>
+                    <p className="t-bm t-secondary">{t("badge.locked", { t: s.target, b: s.anchorsTotal })}</p>
                   </div>
                 ))}
               </div>

@@ -33,7 +33,7 @@ let ensuring: Promise<Me> | null = null;
 let snackId = 0;
 
 export const useApp = create<AppState>((set, get) => ({
-  lang: read("ayden_lang") === "hi" ? "hi" : "en",
+  lang: read("ayden_lang") === "hi" ? "hi" : read("ayden_lang") === "te" ? "te" : "en",
   me: null,
   meChecked: false,
   sessionExpired: false,
