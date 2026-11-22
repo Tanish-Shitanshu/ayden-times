@@ -80,3 +80,18 @@ curl -s https://ayden-app-388558128884.asia-south1.run.app/api/v1/traction
 ```
 
 Documents to read: `docs/FOUNDER_BRIEF.md`, `docs/UNIT_ECONOMICS.md`, `docs/URL_AND_MEDIA.md`, `docs/PROGRESS_REPORT.md` (section 9 mirrors this file), `CONTRACT_CHANGES.md`.
+
+## 7. Update, later on 22 Nov (commits `1587b20`, `d890396`)
+
+Built after the first handoff. **All of it avoids `apps/api/src/roles/*` and the role tests**, so it will not conflict with role work.
+
+- **Shareable work sample (opt in, revocable).** `POST/GET/DELETE /api/v1/reports/:id/share` (owner only) and a public `GET /api/v1/share/:token`. The token is `reportId.random` and lives on the stored report (`share` field, optional); deleting it switches the link off. The public payload has the name the learner typed, skills at or near target, badges, up to 4 verified quotes. **No gaps, no transcript, no scores.** Code: `apps/api/src/domain/share.ts`, route block in `apps/api/src/api/routes.ts`, tests in `apps/api/test/share.test.ts`. Web: `apps/web/src/features/share/` (`ShareCard` on the report page, public page `/s/:token`).
+- **Certificate.** One SVG (`Certificate.tsx`) used for preview, PNG download, print/PDF and the QR code. One-click share to LinkedIn (profile and post), WhatsApp, X, and the phone share sheet with the image attached. Adds the `qrcode-generator` dependency. The wording says "practice simulation, not an accredited qualification or a hiring score". **Do not remove that line.**
+- **Badges redesigned.** `apps/web/src/features/game/BadgeArt.tsx` now draws medals (earned, mastered after 2 fresh variants, locked). Symbol is chosen from the skill id and title by keyword, colour from the role, so **new or renamed skills still get a sensible badge with no changes needed**. The old Gemini image endpoint still exists but is no longer used. Progress page now has a badge shelf with a counter.
+- **Landing hero** is a self-playing "first shift" preview (`features/landing/LiveShift.tsx`), labelled as a scripted example.
+- **Visit counter.** `POST /api/v1/visit` (one call per tab session, no cookie, no IP, bots excluded), buffered in memory and flushed every 15 s; shown on `/traction` as visits, new browsers and the funnel. Two new counters: `visits`, `uniqueVisitors`.
+- **Bug fixed:** "back to roles" returned to the simulation you had just left. `BackLink` now always goes to the page it names, and Exit replaces the simulation in history.
+- **Languages.** Telugu is now hand-written alongside Hindi (`apps/web/src/i18n/te.ts`, 325 keys each; Hindi wording corrected). Landing hero, live preview, share card, work sample and badge shelf are translated. **Not translated:** the landing page sections below the hero, the `/traction` and `/feedback` pages, the certificate itself (kept in English on purpose), and mission content (English by design). Neither Hindi nor Telugu has been reviewed by a native speaker.
+- **Docs.** `docs/UNIT_ECONOMICS.md` sections 6 to 8: cost of the whole architecture by scale, cost per hour of use, and the pricing and subscription hypotheses.
+
+**Tanish, please:** (1) check that `/api/v1/share/:token` should stay public (it only returns what the learner chose to share); (2) decide whether sharing needs an abuse report link before real students use it; (3) look at Firestore index needs, none were added (share lookups are by report id).
