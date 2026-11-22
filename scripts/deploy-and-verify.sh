@@ -8,6 +8,7 @@ REGION=asia-south1
 SERVICE=ayden-app
 SA="ayden-run@${PROJECT}.iam.gserviceaccount.com"
 TOKEN_FILE="$HOME/Documents/Ayden/ADMIN_TOKEN.txt"
+LOGIN_FILE="$HOME/Documents/Ayden/ADMIN_LOGIN.txt"   # one line: name:password (kept outside the repo)
 cd "$(dirname "$0")/.."
 
 say() { printf '\n== %s\n' "$*"; }
@@ -24,13 +25,26 @@ else
   echo "created."
 fi
 
+say "1b/6 Admin login for removal on the traction page (name:password from $LOGIN_FILE, stored in Secret Manager)"
+if [ -f "$LOGIN_FILE" ]; then
+  if gcloud secrets describe admin-login --project "$PROJECT" >/dev/null 2>&1; then
+    gcloud secrets versions add admin-login --project "$PROJECT" --data-file="$LOGIN_FILE" >/dev/null || die "could not update admin-login"
+  else
+    gcloud secrets create admin-login --project "$PROJECT" --replication-policy=automatic --data-file="$LOGIN_FILE" >/dev/null || die "could not create admin-login"
+    gcloud secrets add-iam-policy-binding admin-login --project "$PROJECT" --member="serviceAccount:$SA" --role="roles/secretmanager.secretAccessor" >/dev/null || die "could not grant access"
+  fi
+  echo "admin-login ready."
+else
+  echo "No $LOGIN_FILE found: removal from the traction page stays switched off."
+fi
+
 say "2/6 Local tests and build"
 npm test || die "tests failed"
 npm run build >/dev/null || die "build failed"
 
 say "3/6 Deploy a no-traffic candidate revision (takes a few minutes)"
 gcloud run deploy "$SERVICE" --source . --region "$REGION" --project "$PROJECT" --no-traffic --tag candidate \
-  --update-secrets ADMIN_TOKEN=admin-token:latest \
+  --update-secrets "ADMIN_TOKEN=admin-token:latest$( [ -f "$LOGIN_FILE" ] && echo ,ADMIN_LOGIN=admin-login:latest )" \
   --update-env-vars "LLM_MODE=live,COMMIT_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo dev)" --quiet || die "deploy failed"
 
 URL=$(gcloud run services describe "$SERVICE" --region "$REGION" --project "$PROJECT" --format=json | python3 -c "import sys,json; print(next((t['url'] for t in json.load(sys.stdin)['status']['traffic'] if t.get('tag')=='candidate'),''))")

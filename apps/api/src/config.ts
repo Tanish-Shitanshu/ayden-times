@@ -33,6 +33,8 @@ export const config = {
   firestoreDatabase: env.FIRESTORE_DATABASE ?? "(default)",
   sessionSecret: sessionSecret(),
   /** Enables the admin page when set (Secret Manager in production). Unset means the admin routes do not exist. */
+  /** "name:password" for removing a public testimonial from the traction page. Unset means removal is switched off. */
+  adminLogin: ((): { name: string; password: string } | null => { const i = (env.ADMIN_LOGIN ?? "").indexOf(":"); return i > 0 ? { name: env.ADMIN_LOGIN!.slice(0, i).trim().toLowerCase(), password: env.ADMIN_LOGIN!.slice(i + 1) } : null; })(),
   adminToken: env.ADMIN_TOKEN && env.ADMIN_TOKEN.length >= 16 ? env.ADMIN_TOKEN : "",
   /** gemini = Google's code-execution sandbox. local-python = dev/test only, never in production. */
   sandbox: (env.SANDBOX ?? "gemini") as "gemini" | "local-python",

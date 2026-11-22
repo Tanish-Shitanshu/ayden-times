@@ -1,4 +1,4 @@
-import { randomBytes, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
 import type {
@@ -492,6 +492,27 @@ export function registerRoutes(app: FastifyInstance, deps: Deps) {
     return summarise(items, { missionsStarted: counters.missionsStarted, missionsCompleted: counters.missionsCompleted, visits: (counters.visits ?? 0) + visitBuf.visits, uniqueVisitors: (counters.uniqueVisitors ?? 0) + visitBuf.unique }, { tokens: counters.tokens ?? 0, costMicros: counters.costMicros ?? 0, measuredMissions: counters.measuredMissions ?? 0 });
   });
 
+
+
+  /* ───────── removal from the public traction page: admin login (name and password) ───────── */
+
+  const removeLimiter = new RateLimiter(8, 15 * 60_000);
+  const digest = (v: string) => createHash("sha256").update(v).digest();
+  const removeSchema = z.object({ name: z.string().max(60), password: z.string().max(120) });
+  app.post("/feedback/:id/remove", async (req, reply) => {
+    const login = config.adminLogin;
+    if (!login) throw new ApiError(404, "not_found", "Not found.");
+    const wait = removeLimiter.check(req.ip);
+    if (wait !== null) throw new ApiError(429, "rate_limited", "Too many attempts. Try again later.", wait);
+    const b = removeSchema.parse(req.body);
+    const okName = timingSafeEqual(digest(b.name.trim().toLowerCase()), digest(login.name));
+    const okPass = timingSafeEqual(digest(b.password), digest(login.password));
+    reply.header("cache-control", "no-store");
+    if (!(okName && okPass)) throw new ApiError(403, "forbidden", "Wrong name or password.");
+    const ok = await store.deleteFeedback((req.params as { id: string }).id);
+    if (!ok) throw new ApiError(404, "not_found", "That response is already gone.");
+    return { deleted: true };
+  });
 
   /* ───────── admin: review and remove feedback (token protected; off unless ADMIN_TOKEN is set) ───────── */
 

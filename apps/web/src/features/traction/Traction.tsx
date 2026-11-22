@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { api, type TractionData } from "../../api/client";
 import { useAsync, useInterval } from "../../lib/hooks";
 import { Avatar, BackLink, Bar, Chip, EmptyState, ErrorState, Icon, LinkButton, Skeleton } from "../../design/components";
+import { AdminRemove } from "./AdminRemove";
 import "./traction.css";
 
 const ROLE_NAMES: Record<string, string> = {
@@ -32,6 +34,7 @@ function Kpi({ num, unit, label, hint }: { num: string; unit?: string; label: st
 export default function Traction() {
   const state = useAsync<TractionData>(() => api.getTraction(), []);
   useInterval(() => { api.getTraction().then(state.setData).catch(() => undefined); }, 15000);
+  const [removed, setRemoved] = useState<string[]>([]);
   const d = state.data;
   const maxRating = d ? Math.max(1, ...d.ratings) : 1;
 
@@ -118,11 +121,11 @@ export default function Traction() {
 
           <section className="stack gap-12" aria-labelledby="tr-wall">
             <h2 id="tr-wall" className="t-tl">What testers said</h2>
-            {d.wall.length === 0 ? (
+            {d.wall.filter((w) => !removed.includes(w.id)).length === 0 ? (
               <p className="t-bm t-secondary">Quotes appear here when a tester chooses to show their feedback.</p>
             ) : (
               <div className="tr-wall">
-                {d.wall.map((w) => (
+                {d.wall.filter((w) => !removed.includes(w.id)).map((w) => (
                   <figure className="card tr-quote" key={w.id} style={{ margin: 0 }}>
                     <Stars n={w.rating} />
                     <blockquote>“{w.comment}”</blockquote>
@@ -133,6 +136,7 @@ export default function Traction() {
                         <span className="t-label t-secondary">{[w.college, w.roleId ? ROLE_NAMES[w.roleId] : undefined].filter(Boolean).join(" · ") || "Tester"}</span>
                       </div>
                     </figcaption>
+                    <AdminRemove id={w.id} onRemoved={(id) => setRemoved((r) => [...r, id])} />
                   </figure>
                 ))}
               </div>
