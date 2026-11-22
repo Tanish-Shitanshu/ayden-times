@@ -160,11 +160,11 @@ describe("Tech Consulting", () => {
 });
 
 describe("Roles listing", () => {
-  it("lists five roles with only the built ones ready", async () => {
+  it("lists six roles with only the built ones ready", async () => {
     const { client } = await setup();
     const roles = (await client().call("GET", "/roles")).body as { id: string; status: string }[];
-    expect(roles.length).toBe(5);
-    expect(roles.filter((r) => r.status === "ready").map((r) => r.id).sort()).toEqual(["banking-ops", "nurse", "software-engineer", "tech-consulting"]);
+    expect(roles.length).toBe(6);
+    expect(roles.filter((r) => r.status === "ready").map((r) => r.id).sort()).toEqual(["banking-ops", "executive", "nurse", "software-engineer", "tech-consulting"]);
     expect(roles.find((r) => r.id === "data-analyst")!.status).toBe("planned");
     const d = (await client().call("GET", "/roles/nurse")).body;
     expect(d.safetyNote).toMatch(/clinician/i);

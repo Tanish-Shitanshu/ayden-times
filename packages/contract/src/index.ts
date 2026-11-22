@@ -16,7 +16,7 @@ export const API_BASE = "/api/v1";
 /* ───────────── primitives ───────────── */
 
 export type ISODate = string;
-export type RoleId = "software-engineer" | "tech-consulting" | "nurse" | "banking-ops" | "data-analyst";
+export type RoleId = "software-engineer" | "tech-consulting" | "nurse" | "banking-ops" | "executive" | "data-analyst";
 export type SkillId = string; // defined per role in RoleDetail.skills (never hardcode in UI)
 export type PersonId = string;
 export type Lang = "en" | "hi" | "bn" | "te" | "mr" | "ta" | "gu" | "ur" | "kn" | "ml" | "or" | "pa" | "as";

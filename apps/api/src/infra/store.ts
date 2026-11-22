@@ -1,5 +1,5 @@
 import type { MissionEvent, TraceEntry } from "@ayden/contract";
-import type { CohortRec, Session, StoredReport, UserRec } from "../domain/types.js";
+import type { CohortRec, FeedbackRec, Session, StoredReport, UserRec } from "../domain/types.js";
 
 export interface Counters {
   missionsStarted: number;
@@ -39,6 +39,10 @@ export interface Store {
   listCohortsForUser(uid: string): Promise<CohortRec[]>;
   getUsers(ids: string[]): Promise<UserRec[]>;
 
+  putFeedback(f: FeedbackRec): Promise<void>;
+  /** Newest first. */
+  listFeedback(limit: number): Promise<FeedbackRec[]>;
+
   incr(counter: keyof Counters, by?: number): Promise<void>;
   getCounters(): Promise<Counters>;
 }
@@ -65,6 +69,7 @@ export class MemoryStore implements Store {
   traces = new Map<string, TraceEntry[]>();
   reports = new Map<string, StoredReport>();
   cohorts = new Map<string, CohortRec>();
+  feedback = new Map<string, FeedbackRec>();
   counters = emptyCounters();
 
   async getUser(id: string) {
@@ -83,6 +88,7 @@ export class MemoryStore implements Store {
       }
     }
     for (const [id, r] of this.reports) if (r.uid === uid) this.reports.delete(id);
+    for (const [id, f] of this.feedback) if (f.uid === uid) this.feedback.delete(id);
     for (const [id, c] of this.cohorts) {
       if (c.ownerId === uid) this.cohorts.delete(id);
       else c.members = c.members.filter((m) => m !== uid);
@@ -136,6 +142,12 @@ export class MemoryStore implements Store {
   }
   async getUsers(ids: string[]) {
     return ids.map((i) => this.users.get(i)).filter(Boolean).map((u) => clone(u!)!);
+  }
+  async putFeedback(f: FeedbackRec) {
+    this.feedback.set(f.id, clone(f)!);
+  }
+  async listFeedback(limit: number) {
+    return [...this.feedback.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, limit).map((f) => clone(f)!);
   }
   async incr(counter: keyof Counters, by = 1) {
     this.counters[counter] += by;

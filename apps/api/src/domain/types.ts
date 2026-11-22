@@ -317,6 +317,24 @@ export interface StoredReport extends Report {
   skillRatios: Record<string, number>;
 }
 
+/** A tester's feedback. The photo (small JPEG data URL) and name are kept only when showPublicly is true. */
+export interface FeedbackRec {
+  id: string;
+  uid: string;
+  createdAt: string;
+  roleId?: RoleId;
+  missionId?: string;
+  /** 1 to 5 stars */
+  rating: number;
+  /** 0 to 10, would you recommend Ayden */
+  recommend: number;
+  comment?: string;
+  name?: string;
+  college?: string;
+  photo?: string;
+  showPublicly: boolean;
+}
+
 export interface CohortRec extends Omit<Cohort, "role" | "memberCount"> {
   members: string[];
 }

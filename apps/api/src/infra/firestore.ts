@@ -1,6 +1,6 @@
 import { FieldValue, Firestore } from "@google-cloud/firestore";
 import type { MissionEvent, TraceEntry } from "@ayden/contract";
-import type { CohortRec, Session, StoredReport, UserRec } from "../domain/types.js";
+import type { CohortRec, FeedbackRec, Session, StoredReport, UserRec } from "../domain/types.js";
 import { emptyCounters, type Counters, type Store } from "./store.js";
 
 /** Firestore-backed store (production). Only the API service account touches these collections. */
@@ -42,6 +42,8 @@ export class FirestoreStore implements Store {
     }
     const reports = await this.col("reports").where("uid", "==", uid).get();
     await Promise.all(reports.docs.map((d) => d.ref.delete()));
+    const feedback = await this.col("feedback").where("uid", "==", uid).get();
+    await Promise.all(feedback.docs.map((d) => d.ref.delete()));
     const owned = await this.col("cohorts").where("ownerId", "==", uid).get();
     await Promise.all(owned.docs.map((d) => d.ref.delete()));
     const member = await this.col("cohorts").where("members", "array-contains", uid).get();
@@ -124,6 +126,14 @@ export class FirestoreStore implements Store {
       docs.forEach((d) => d.exists && out.push(d.data() as UserRec));
     }
     return out;
+  }
+
+  async putFeedback(f: FeedbackRec) {
+    await this.col("feedback").doc(f.id).set(f);
+  }
+  async listFeedback(limit: number) {
+    const snap = await this.col("feedback").orderBy("createdAt", "desc").limit(limit).get();
+    return snap.docs.map((d) => d.data() as FeedbackRec);
   }
 
   async incr(counter: keyof Counters, by = 1) {

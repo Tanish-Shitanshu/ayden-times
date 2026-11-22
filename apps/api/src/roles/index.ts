@@ -1,11 +1,12 @@
 import type { DrillDef, MissionDef, RolePack } from "../domain/types.js";
 import { bankingOps } from "./banking-ops.js";
 import { dataAnalyst } from "./data-analyst.js";
+import { executive } from "./executive.js";
 import { nurse } from "./nurse.js";
 import { softwareEngineer } from "./software-engineer.js";
 import { techConsulting } from "./tech-consulting.js";
 
-export const ROLES: RolePack[] = [softwareEngineer, bankingOps, nurse, techConsulting, dataAnalyst];
+export const ROLES: RolePack[] = [softwareEngineer, bankingOps, nurse, techConsulting, executive, dataAnalyst];
 
 export const getRole = (id: string): RolePack | undefined => ROLES.find((r) => r.id === id);
 

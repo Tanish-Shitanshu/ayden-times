@@ -19,6 +19,7 @@ import { finishMission } from "../domain/lifecycle.js";
 import { cohortInsights } from "../domain/privacy.js";
 import { computeProgress } from "../domain/progress.js";
 import { publicReport } from "../domain/report.js";
+import { summarise } from "../domain/traction.js";
 import type { CohortRec, RolePack, UserRec } from "../domain/types.js";
 import { ROLES, getRole } from "../roles/index.js";
 import { plainText } from "../infra/google-extras.js";
@@ -38,7 +39,7 @@ const actSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("finish"), clientSeq: z.number().int().min(0) }),
 ]);
 
-const roleIds = ["software-engineer", "tech-consulting", "nurse", "banking-ops", "data-analyst"] as const;
+const roleIds = ["software-engineer", "tech-consulting", "nurse", "banking-ops", "executive", "data-analyst"] as const;
 const createSchema = z.object({
   roleId: z.enum(roleIds),
   missionId: z.string().max(60).optional(),
@@ -50,6 +51,18 @@ const onboardingSchema = z.object({
   roleId: z.enum(roleIds),
   experience: z.enum(["none", "some", "internship"]),
   selfRatings: z.record(z.string(), z.number().int().min(1).max(5)),
+});
+const feedbackSchema = z.object({
+  rating: z.number().int().min(1).max(5),
+  recommend: z.number().int().min(0).max(10),
+  comment: z.string().trim().max(600).optional(),
+  name: z.string().trim().max(60).optional(),
+  college: z.string().trim().max(80).optional(),
+  roleId: z.enum(roleIds).optional(),
+  missionId: z.string().max(60).optional(),
+  showPublicly: z.boolean(),
+  /** a small JPEG, resized in the browser */
+  photo: z.string().max(90_000).regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/).optional(),
 });
 const consentSchema = z.object({ age18: z.boolean(), storeWork: z.boolean(), shareAnonymousPatterns: z.boolean() });
 
@@ -355,6 +368,40 @@ export function registerRoutes(app: FastifyInstance, deps: Deps) {
     const wav = await deps.extras?.speak(text, ev.from);
     if (!wav) throw new ApiError(503, "internal", "Speech is not available right now.");
     return reply.header("content-type", "audio/wav").header("cache-control", "private, max-age=3600").send(wav);
+  });
+
+  /* ───────── feedback and traction ───────── */
+
+  const feedbackLimiter = new RateLimiter(8, 60 * 60_000);
+  app.post("/feedback", async (req) => {
+    const user = await requireUser(req, store);
+    const wait = feedbackLimiter.check(user.id);
+    if (wait !== null) throw new ApiError(429, "rate_limited", "Thanks, that is plenty of feedback for now.", wait);
+    const b = feedbackSchema.parse(req.body);
+    const publicOk = b.showPublicly;
+    await store.putFeedback({
+      id: "f_" + randomBytes(6).toString("base64url").replace(/[-_]/g, "x"),
+      uid: user.id,
+      createdAt: nowIso(),
+      roleId: b.roleId,
+      missionId: b.missionId,
+      rating: b.rating,
+      recommend: b.recommend,
+      comment: b.comment || undefined,
+      // name, college and photo are only kept when the tester agreed to show their feedback publicly
+      name: publicOk ? b.name || undefined : undefined,
+      college: publicOk ? b.college || undefined : undefined,
+      photo: publicOk ? b.photo : undefined,
+      showPublicly: publicOk,
+    });
+    return { ok: true };
+  });
+
+  /** Public, aggregate-only. Never returns a tester who did not agree to be shown. */
+  app.get("/traction", async (_req, reply) => {
+    const [items, counters] = await Promise.all([store.listFeedback(500), store.getCounters()]);
+    reply.header("cache-control", "public, max-age=10");
+    return summarise(items, { missionsStarted: counters.missionsStarted, missionsCompleted: counters.missionsCompleted });
   });
 
   /* ───────── system ───────── */
