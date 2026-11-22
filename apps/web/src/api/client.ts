@@ -51,6 +51,29 @@ type UnauthHandler = (path: string) => void;
 let onUnauthenticated: UnauthHandler | null = null;
 export function setUnauthenticatedHandler(fn: UnauthHandler | null) { onUnauthenticated = fn; }
 
+export interface FeedbackInput {
+  rating: number;
+  recommend: number;
+  comment?: string;
+  name?: string;
+  college?: string;
+  roleId?: RoleId;
+  missionId?: string;
+  showPublicly: boolean;
+  photo?: string;
+}
+export interface TractionData {
+  updatedAt: string;
+  feedbackCount: number;
+  testers: number;
+  avgRating: number | null;
+  nps: number | null;
+  ratings: number[];
+  byRole: { roleId: string; count: number; avgRating: number }[];
+  wall: { id: string; name: string; college?: string; roleId?: string; rating: number; comment: string; photo?: string; date: string }[];
+  platform: { missionsStarted: number; missionsCompleted: number };
+}
+
 interface Opts { silent401?: boolean }
 
 async function request<T>(method: string, path: string, body?: unknown, opts: Opts = {}): Promise<T> {
@@ -112,5 +135,7 @@ export const api = {
   getInsights: (id: string) => request<CohortInsights>("GET", `/cohorts/${encodeURIComponent(id)}/insights`),
   getStatus: () => request<SystemStatus>("GET", "/system/status"),
   translateUi: (lang: string, strings: Record<string, string>) => request<{ lang: string; strings: Record<string, string> }>("POST", "/i18n/translate", { lang, strings }),
+  sendFeedback: (b: FeedbackInput) => request<{ ok: true }>("POST", "/feedback", b),
+  getTraction: () => request<TractionData>("GET", "/traction", undefined, { silent401: true }),
   health: () => request<{ ok: true }>("GET", "/health"),
 };

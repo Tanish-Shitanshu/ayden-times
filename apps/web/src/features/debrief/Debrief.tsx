@@ -11,6 +11,7 @@ import { BackLink, Banner, Bar, Breadcrumbs, Button, Chip, Dialog, ErrorState, I
 import { TranscriptDrawer } from "../common/TranscriptDrawer";
 import type { I18nKey } from "../../i18n/en";
 import { Celebrate } from "../game/Celebrate";
+import { FeedbackForm } from "../feedback/FeedbackForm";
 
 const STATE: Record<SkillResult["state"], { tone: "success" | "warning" | "error" | "tonal"; icon: string; color: string }> = {
   strong: { tone: "success", icon: "verified", color: "var(--success)" },
@@ -212,6 +213,8 @@ export default function Debrief() {
         </details>
         <div style={{ marginTop: 16 }}><Button variant="tonal" icon="ios_share" onClick={() => setShare(true)}>{t("debrief.share")}</Button></div>
       </section>
+
+      <section className="stack gap-12" style={{ marginTop: 32 }} aria-label="Feedback"><FeedbackForm roleId={report.roleId} missionId={report.missionId} /></section>
 
       <div className="debrief-foot">
         <div className="row gap-8 wrap">

@@ -12,6 +12,7 @@ import { useMission, type UiEvent } from "./useMission";
 import { EventView, threadOf } from "./EventView";
 import { WorkPanel, ITEM_ICON } from "./WorkPanel";
 import { TraceDrawer } from "./TraceDrawer";
+import { playSound } from "../../lib/sound";
 
 type Pane = "chat" | "work" | "team";
 interface UiPersist { thread?: string; centerTab?: "chat" | "email"; workTab?: string; itemId?: string; artifactId?: string; lastSeen?: Record<string, number>; scroll?: number; pinned?: boolean }
@@ -216,7 +217,7 @@ export default function Workspace() {
 
   const doAdvance = async () => {
     setBusy("advance");
-    try { await M.act({ kind: "advance" }); } catch (e) { toast(errorText(t, e)); } finally { setBusy(null); }
+    try { await M.act({ kind: "advance" }); playSound("beat"); } catch (e) { toast(errorText(t, e)); } finally { setBusy(null); }
   };
   const doFinish = async () => {
     setBusy("finish");

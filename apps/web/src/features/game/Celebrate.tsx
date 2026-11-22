@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "../../api/client";
 import type { Badge, Report } from "../../contract";
 import { Icon } from "../../design/components";
+import { playSound } from "../../lib/sound";
 import { BadgeArt } from "./BadgeArt";
 import "./game.css";
 
@@ -26,7 +27,7 @@ export function Celebrate({ report, missionId }: { report: Report; missionId: st
       setBadges(mine);
       let first = true;
       try { first = sessionStorage.getItem(`ayden:celebrated:${missionId}`) !== "1"; sessionStorage.setItem(`ayden:celebrated:${missionId}`, "1"); } catch { /* ignore */ }
-      if (first && (mine.length > 0 || strong.length > 0)) { setBurst(true); setTimeout(() => alive && setBurst(false), 2600); }
+      if (first && (mine.length > 0 || strong.length > 0)) { setBurst(true); playSound("complete"); setTimeout(() => alive && setBurst(false), 2600); }
     }).catch(() => setBadges([]));
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps

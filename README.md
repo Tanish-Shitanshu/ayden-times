@@ -27,7 +27,7 @@ New graduates are judged on day-one work, but nobody lets them practise it. Inte
 
 ## How it works
 
-1. **Pick a role.** Software Engineer, Banking Ops, Nurse or Tech Consulting.
+1. **Pick a role.** Software Engineer, Banking Ops, Nurse, Consulting or Startup CEO.
 2. **Work a realistic day** with a team of AI colleagues: manager, reviewer, QA, buddy, a senior stakeholder. Read the ticket, ask questions, write real code, commit, open a pull request, handle review feedback.
 3. **Get a Skill X-ray.** Where you are strong, where you are lacking, how your self-rating compares with what you showed, and what to practise next.
 4. **Drill the gap.** A short targeted drill or a new variant of the same scenario.
@@ -89,7 +89,7 @@ flowchart LR
 
 | Area | State |
 |---|---|
-| Roles | Software Engineer, Banking Ops, Nurse, Tech Consulting ready; Data Analyst planned |
+| Roles | Software Engineer, Banking Ops, Nurse, Consulting, Startup CEO ready; Data Analyst planned |
 | Engine | Turn-based world, beats, scripted events, knowledge boundaries, commitment detection, validated tools, idempotent actions |
 | Agents | Gemini function-calling colleagues; scripted fallback, flagged in the UI |
 | Code checks | Run in Google's code-execution sandbox; labelled static fallback |

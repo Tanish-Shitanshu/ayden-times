@@ -6,6 +6,7 @@ import { useAsync } from "../../lib/hooks";
 import { useT } from "../../lib/i18n";
 import { Avatar, Chip, Icon, IconTile, LinkButton, ErrorState, Bar } from "../../design/components";
 import { RoleCard, RoleCardSkeleton } from "../roles/RoleCard";
+import { TractionStrip } from "../traction/TractionStrip";
 
 function Preview() {
   return (
@@ -47,6 +48,7 @@ export default function Landing() {
               <LinkButton to="/how-it-works" size="lg" variant="outlined">{content.hero.secondary}</LinkButton>
             </div>
             <p className="hero-note"><Icon name="lock" className="sm" />{content.hero.note}</p>
+            <TractionStrip />
           </div>
           <Preview />
         </div>

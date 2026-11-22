@@ -9,6 +9,7 @@ import { useFocusOnRoute } from "../lib/a11y";
 import type { I18nKey } from "../i18n/en";
 import type { Lang } from "../contract";
 import { UI_LANGUAGES } from "../lib/languages";
+import { playSound, setSoundEnabled, soundEnabled } from "../lib/sound";
 
 const NAV: { to: string; key: I18nKey; icon: string }[] = [
   { to: "/roles", key: "nav.roles", icon: "work" },
@@ -110,6 +111,16 @@ function Header() {
   );
 }
 
+function SoundToggle() {
+  const [on, setOn] = useState(soundEnabled());
+  useEffect(() => { const f = () => setOn(soundEnabled()); window.addEventListener("ayden-sound", f); return () => window.removeEventListener("ayden-sound", f); }, []);
+  return (
+    <button type="button" className="link-btn row gap-4" aria-pressed={on} onClick={() => { setSoundEnabled(!on); if (!on) playSound("beat"); }}>
+      <Icon name={on ? "volume_up" : "volume_off"} className="sm" />Sound {on ? "on" : "off"}
+    </button>
+  );
+}
+
 function Footer() {
   const t = useT();
   return (
@@ -123,6 +134,8 @@ function Footer() {
         <nav className="row gap-16 wrap" aria-label="Footer">
           <Link to="/privacy">{t("nav.privacy")}</Link>
           <Link to="/how-it-works">{t("nav.how")}</Link>
+          <Link to="/traction">Traction</Link>
+          <SoundToggle />
           <Link to="/cohort">{t("nav.cohort")}</Link>
           {content.feedbackUrl && <a href={content.feedbackUrl} target="_blank" rel="noopener noreferrer">{t("footer.feedback")}</a>}
         </nav>

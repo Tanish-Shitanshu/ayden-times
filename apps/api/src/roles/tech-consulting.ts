@@ -301,7 +301,7 @@ const DRILLS: DrillDef[] = [
 export const techConsulting: RolePack = {
   id: ROLE,
   status: "ready",
-  title: "Tech Consulting Analyst",
+  title: "Consulting Analyst (Business Strategy)",
   tagline: "Answer first, numbers that tie, and a client who wants more.",
   domain: "Consulting",
   company: COMPANY,

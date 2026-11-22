@@ -1,0 +1,24 @@
+.fb-form { max-width: 720px; }
+.fb-group { border: 0; padding: 0; margin: 0; min-width: 0; }
+.fb-group legend { padding: 0; margin-bottom: 8px; }
+.fb-stars { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.fb-star { width: 48px; height: 48px; border-radius: 50%; border: 0; background: transparent; color: var(--outline-strong); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: transform var(--dur) var(--ease), color var(--dur) var(--ease); }
+.fb-star .icon { font-size: 34px; }
+.fb-star.on { color: #f9ab00; }
+.fb-star:hover { transform: scale(1.08); }
+.fb-star:focus-visible, .fb-n:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+.fb-star-word { margin-left: 8px; }
+.fb-scale { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 4px; }
+.fb-n { height: 44px; border-radius: 10px; border: 1px solid var(--outline); background: var(--surface); color: var(--text); font: inherit; font-weight: 500; font-size: 15px; cursor: pointer; transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease); }
+.fb-n:hover { border-color: var(--outline-strong); }
+.fb-n.on { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+.fb-scale-labels { display: flex; justify-content: space-between; margin-top: 4px; }
+@media (max-width: 479px) { .fb-scale { grid-template-columns: repeat(6, minmax(0, 1fr)); } .fb-n { height: 48px; } }
+.fb-public { border-top: 1px solid var(--outline); padding-top: 16px; }
+.fb-public-fields { padding-left: 4px; }
+.fb-photo { align-items: center; }
+.fb-photo-img { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; background: var(--surface-variant); display: inline-flex; align-items: center; justify-content: center; color: var(--text-secondary); flex: none; }
+.fb-photo-img.empty .icon { font-size: 28px; }
+.fb-done { text-align: center; max-width: 560px; padding: 32px 24px; }
+.fb-done-icon { font-size: 48px; color: var(--primary); }
+.fb-done h2 { margin: 8px 0 4px; }

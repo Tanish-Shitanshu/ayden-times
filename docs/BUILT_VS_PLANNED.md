@@ -1,7 +1,7 @@
 # Built vs planned (kept honest; `/api/v1/system/status` mirrors this)
 
 ## Built and tested
-- Four role packs (Software Engineer, Banking Ops, Nurse, Tech Consulting), one engine, 30+ automated tests including injection and privacy tests
+- Five role packs (Software Engineer, Banking Ops, Nurse, Consulting, Startup CEO decision-making), one engine, 30+ automated tests including injection and privacy tests
 - Multi-agent colleagues with validated tool proposals, knowledge boundaries and a visible trace (live mode needs a model key; scripted fallback always works)
 - Quote-bound judge with server-side quote verification and two-run disagreement handling (live mode); transparent rule-based fallback
 - Real code execution in Google's sandbox for the Software Engineer mission (live mode); labelled static fallback
