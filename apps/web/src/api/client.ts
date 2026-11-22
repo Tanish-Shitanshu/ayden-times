@@ -72,6 +72,7 @@ export interface TractionData {
   byRole: { roleId: string; count: number; avgRating: number }[];
   wall: { id: string; name: string; college?: string; roleId?: string; rating: number; comment: string; photo?: string; date: string }[];
   platform: { missionsStarted: number; missionsCompleted: number };
+  economics: { aiCostPerMissionUsd: number | null; aiCostPerHourUsd: number | null; tokens: number; totalAiCostUsd: number };
 }
 
 interface Opts { silent401?: boolean }

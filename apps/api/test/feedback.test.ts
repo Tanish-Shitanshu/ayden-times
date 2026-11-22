@@ -22,6 +22,13 @@ describe("traction summary", () => {
     const many = summarise([9, 10, 10, 8, 3].map((r, i) => f({ uid: "u" + i, recommend: r })), { missionsStarted: 0, missionsCompleted: 0 });
     expect(many.nps).toBe(40);
   });
+  it("turns measured usage into a cost per mission and per hour", () => {
+    const s = summarise([], { missionsStarted: 10, missionsCompleted: 5 }, { tokens: 900_000, costMicros: 500_000 });
+    expect(s.economics.aiCostPerMissionUsd).toBe(0.1);
+    expect(s.economics.aiCostPerHourUsd).toBe(0.273);
+    expect(s.economics.totalAiCostUsd).toBe(0.5);
+    expect(summarise([], { missionsStarted: 1, missionsCompleted: 1 }, { tokens: 1, costMicros: 1 }).economics.aiCostPerMissionUsd).toBeNull();
+  });
   it("is empty and honest with no feedback", () => {
     const s = summarise([], { missionsStarted: 0, missionsCompleted: 0 });
     expect(s.avgRating).toBeNull();

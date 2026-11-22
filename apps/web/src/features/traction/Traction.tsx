@@ -85,6 +85,21 @@ export default function Traction() {
             </div>
           )}
 
+          <section className="card stack gap-12" aria-labelledby="tr-econ">
+            <h2 id="tr-econ" className="t-tl">What a rehearsal costs us (measured)</h2>
+            {d.economics.aiCostPerMissionUsd === null ? (
+              <p className="t-bm t-secondary">Measured from real model usage once a few missions are complete.</p>
+            ) : (
+              <div className="tr-kpis">
+                <Kpi num={"$" + d.economics.aiCostPerMissionUsd.toFixed(3)} label="AI cost per completed mission" hint="About 22 minutes of practice" />
+                <Kpi num={"$" + (d.economics.aiCostPerHourUsd ?? 0).toFixed(2)} label="AI cost per hour of use" hint="Gemini, the biggest cost" />
+                <Kpi num={Math.round(d.economics.tokens / 1000).toLocaleString() + "k"} label="Tokens processed" hint="Counted from every response" />
+                <Kpi num={"$" + d.economics.totalAiCostUsd.toFixed(2)} label="Total AI cost so far" hint="At published paid prices" />
+              </div>
+            )}
+            <p className="t-label t-secondary">Counted from the token usage Gemini reports for each call, priced at Google&apos;s published paid-tier rates. Our testing is included, and today we run on free quota, so what we actually pay is lower.</p>
+          </section>
+
           <section className="stack gap-12" aria-labelledby="tr-wall">
             <h2 id="tr-wall" className="t-tl">What testers said</h2>
             {d.wall.length === 0 ? (

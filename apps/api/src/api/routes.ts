@@ -401,7 +401,7 @@ export function registerRoutes(app: FastifyInstance, deps: Deps) {
   app.get("/traction", async (_req, reply) => {
     const [items, counters] = await Promise.all([store.listFeedback(500), store.getCounters()]);
     reply.header("cache-control", "public, max-age=10");
-    return summarise(items, { missionsStarted: counters.missionsStarted, missionsCompleted: counters.missionsCompleted });
+    return summarise(items, { missionsStarted: counters.missionsStarted, missionsCompleted: counters.missionsCompleted }, { tokens: counters.tokens ?? 0, costMicros: counters.costMicros ?? 0 });
   });
 
   /* ───────── system ───────── */

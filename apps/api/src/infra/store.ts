@@ -12,6 +12,10 @@ export interface Counters {
   badgeArt: number;
   translations: number;
   speech: number;
+  /** Gemini tokens used (input + output), measured from each response. */
+  tokens: number;
+  /** AI cost in micro-dollars (1,000,000 = $1) at the published paid-tier list prices. */
+  costMicros: number;
 }
 
 export interface Store {
@@ -58,6 +62,8 @@ export const emptyCounters = (): Counters => ({
   badgeArt: 0,
   translations: 0,
   speech: 0,
+  tokens: 0,
+  costMicros: 0,
 });
 
 /** In-memory store: used by tests and local dev. Data is lost on restart. */

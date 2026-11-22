@@ -50,13 +50,51 @@ function collectStrings(v: unknown, out: string[] = [], depth = 0): string[] {
   return out;
 }
 
+/** Published paid-tier list prices in dollars per million tokens: [input, output]. Used to turn measured token counts into a cost. */
+const PRICE_PER_MTOK: Record<string, [number, number]> = {
+  "gemini-3.5-flash-lite": [0.3, 2.5],
+  "gemini-3.1-flash-lite": [0.25, 1.5],
+};
+const DEFAULT_PRICE: [number, number] = [0.3, 2.5];
+
 export class GeminiLlm implements LlmClient {
+  private pendingTokens = 0;
+  private pendingMicros = 0;
+  private flushTimer: ReturnType<typeof setInterval> | null = null;
   private client: GoogleGenAI | null = null;
   private clientKey = "";
   private failures = 0;
   private openUntil = 0;
 
-  constructor(private store: Store) {}
+  constructor(private store: Store) {
+    // Usage is added up in memory and written every 15 s, so counting can never slow down or fail a request.
+    this.flushTimer = setInterval(() => void this.flushUsage(), 15_000);
+    this.flushTimer.unref?.();
+  }
+
+  private track(model: string, res: unknown) {
+    const u = (res as { usage?: Record<string, number> } | null)?.usage;
+    if (!u) return;
+    const inT = Number(u.total_input_tokens ?? 0) + Number(u.total_tool_use_tokens ?? 0);
+    const outT = Number(u.total_output_tokens ?? 0) + Number(u.total_thought_tokens ?? 0);
+    const [pi, po] = PRICE_PER_MTOK[model] ?? DEFAULT_PRICE;
+    this.pendingTokens += inT + outT;
+    this.pendingMicros += Math.round(inT * pi + outT * po);
+  }
+
+  private async flushUsage() {
+    const t = this.pendingTokens;
+    const c = this.pendingMicros;
+    if (!t && !c) return;
+    this.pendingTokens = 0;
+    this.pendingMicros = 0;
+    try {
+      await this.store.incr("tokens", t);
+      await this.store.incr("costMicros", c);
+    } catch (e) {
+      warn("usage counter write failed", { error: String((e as Error).message).slice(0, 100) });
+    }
+  }
 
   private get ai(): GoogleGenAI {
     const key = config.geminiKey;
@@ -124,6 +162,7 @@ export class GeminiLlm implements LlmClient {
         response_format: { type: "text", mime_type: "application/json", schema: args.schema },
       }),
     );
+    this.track(args.model, res);
     const text: string = (res as any).output_text ?? "";
     return { data: JSON.parse(text), latencyMs: Date.now() - t0, model: args.model };
   }
@@ -139,6 +178,7 @@ export class GeminiLlm implements LlmClient {
         tools: args.tools.map((t) => ({ type: "function", name: t.name, description: t.description, parameters: t.parameters })),
       }),
     );
+    this.track(args.model, res);
     const steps: any[] = (res as any).steps ?? [];
     const calls: ToolCall[] = steps
       .filter((s) => s.type === "function_call")
@@ -163,6 +203,7 @@ export class GeminiLlm implements LlmClient {
     const res = await this.guarded("exec", timeoutMs, () =>
       (this.ai as any).interactions.create({ model: config.models.tester, store: false, input: prompt, tools: [{ type: "code_execution" }] }),
     );
+    this.track(config.models.tester, res);
     const steps: any[] = (res as any).steps ?? [];
     // Prefer sandbox output steps over model prose.
     const sandbox = steps.filter((s) => String(s.type).includes("code_execution_result")).flatMap((s) => collectStrings(s));
