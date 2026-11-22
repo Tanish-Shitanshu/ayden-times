@@ -64,7 +64,7 @@ export default function Traction() {
               <div className="tr-kpis">
                 <Kpi num={String(d.platform.visits)} label="Visits" hint="Page loads, one per browser tab session" />
                 <Kpi num={String(d.platform.uniqueVisitors ?? 0)} label="New browsers" hint="Seen for the first time" />
-                <Kpi num={String(d.platform.missionsStarted)} label="Simulations started" hint={d.platform.visits ? `${Math.round((d.platform.missionsStarted / d.platform.visits) * 100)}% of visits` : undefined} />
+                <Kpi num={String(d.platform.missionsStarted)} label="Simulations started" hint={d.platform.visits && d.platform.missionsStarted <= d.platform.visits ? `${Math.round((d.platform.missionsStarted / d.platform.visits) * 100)}% of visits` : "Includes our own testing"} />
                 <Kpi num={String(d.platform.missionsCompleted)} label="Simulations finished" hint={d.platform.missionsStarted ? `${Math.round((d.platform.missionsCompleted / d.platform.missionsStarted) * 100)}% of those started` : undefined} />
               </div>
               <p className="t-label t-secondary">Counted without cookies, names or IP addresses. Bots are excluded. Includes our own visits while building and testing.</p>
