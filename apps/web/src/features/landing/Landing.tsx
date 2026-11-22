@@ -4,32 +4,10 @@ import { content } from "../../content";
 import { api } from "../../api/client";
 import { useAsync } from "../../lib/hooks";
 import { useT } from "../../lib/i18n";
-import { Avatar, Chip, Icon, IconTile, LinkButton, ErrorState, Bar } from "../../design/components";
+import { Chip, Icon, IconTile, LinkButton, ErrorState } from "../../design/components";
 import { RoleCard, RoleCardSkeleton } from "../roles/RoleCard";
 import { TractionStrip } from "../traction/TractionStrip";
-
-function Preview() {
-  return (
-    <div className="preview" aria-hidden="true">
-      <div className="preview-card pv-chat">
-        <div className="pv-head"><Avatar name="Priya Nair" hue={210} size="sm" presence="online" /><span className="t-tm">Priya Nair</span><Chip tone="tonal">AI</Chip><span className="spacer" /><span className="t-label t-secondary">Wed 09:30</span></div>
-        <div className="pv-bubble">Morning! I've put <b>INV-142</b> on your board. Customers are getting a double discount. Release is Friday.</div>
-        <div className="pv-mine">Before I start: does the discount apply per line or to the whole order?</div>
-      </div>
-      <div className="preview-card pv-review">
-        <div className="row gap-8"><Chip tone="error" icon="block">Blocker</Chip><span className="t-label t-secondary mono">src/pricing.py:6</span></div>
-        <div className="pv-code"><span className="del">-    subtotal = subtotal * (1 - rate)</span>{"\n"}<span className="add">+    return price * quantity</span></div>
-        <p className="t-bm" style={{ marginTop: 8 }}>Could you add a test for quantity 0? It has regressed before.</p>
-      </div>
-      <div className="preview-card pv-xray">
-        <div className="row gap-8"><Icon name="radiology" style={{ color: "var(--primary)" }} /><span className="t-tm">Skill X-ray</span><span className="spacer" /><Chip tone="warning">Developing</Chip></div>
-        <p className="t-bm t-secondary" style={{ marginTop: 6 }}>Commits teammates can follow</p>
-        <div className="pv-line"><Bar value={80} thin /><span className="t-label t-secondary">You said</span></div>
-        <div className="pv-line"><Bar value={40} marker={60} thin color="var(--warning)" /><span className="t-label t-secondary">You showed</span></div>
-      </div>
-    </div>
-  );
-}
+import { LiveShift } from "./LiveShift";
 
 export default function Landing() {
   const t = useT();
@@ -50,7 +28,7 @@ export default function Landing() {
             <p className="hero-note"><Icon name="lock" className="sm" />{content.hero.note}</p>
             <TractionStrip />
           </div>
-          <Preview />
+          <LiveShift />
         </div>
       </section>
 

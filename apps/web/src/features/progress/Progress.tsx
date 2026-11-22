@@ -122,26 +122,31 @@ export default function Progress() {
             )}
 
             <section aria-labelledby="b-h">
-              <h2 id="b-h" className="t-tl" style={{ marginBottom: 16 }}>{t("progress.badges")}</h2>
+              <div className="shelf-head">
+                <h2 id="b-h" className="t-tl">{t("progress.badges")}</h2>
+                <span className="shelf-count"><Icon name="workspace_premium" className="sm" fill />{p.badges.length} of {p.skills.length} earned</span>
+                <div className="shelf-bar" role="progressbar" aria-label="Badges earned" aria-valuemin={0} aria-valuemax={p.skills.length} aria-valuenow={p.badges.length}><div style={{ width: `${p.skills.length ? (p.badges.length / p.skills.length) * 100 : 0}%` }} /></div>
+              </div>
               <div className="badge-grid">
-                {p.badges.map((b) => (
-                  <div key={b.id} className="card badge-card">
-                    <BadgeArt roleId={b.roleId} skillId={b.skillId} />
-                    <div className="stack gap-4 grow">
+                {p.badges.map((b) => {
+                  const mastered = (p.skills.find((s) => s.skillId === b.skillId)?.freshVariantsDemonstrated ?? 0) >= 2;
+                  return (
+                    <div key={b.id} className="card badge-card badge-tile">
+                      <BadgeArt roleId={b.roleId} skillId={b.skillId} title={b.title} size={104} tier={mastered ? "mastered" : "earned"} />
+                      <span className={`tier ${mastered ? "mastered" : "earned"}`}>{mastered ? "Mastered" : "Earned"}</span>
                       <h3 className="t-tm">{b.title}</h3>
                       <p className="t-bm t-secondary">{b.description}</p>
-                      <p className="t-label t-secondary">{t("progress.earned", { d: formatDate(b.earnedAt, lang) })}</p>
+                      <p className="t-label t-secondary">{t("progress.earned", { d: formatDate(b.earnedAt, lang) })}{mastered ? "" : " · repeat it on a fresh variant to master it"}</p>
                       {b.evidenceSeq ? <div><Button variant="text" size="sm" icon="format_quote" onClick={() => setEv({ missionId: b.missionId, seq: b.evidenceSeq! })}>{t("progress.seeEvidence")}</Button></div> : null}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {p.skills.filter((s) => !p.badges.some((b) => b.skillId === s.skillId)).map((s) => (
-                  <div key={s.skillId} className="card badge-card locked">
-                    <BadgeArt roleId={p.roleId} skillId={s.skillId} locked />
-                    <div className="stack gap-4 grow">
-                      <h3 className="t-tm">{s.label}</h3>
-                      <p className="t-bm t-secondary">Locked. Show {s.target} of {s.anchorsTotal} behaviours with your own words to earn it.</p>
-                    </div>
+                  <div key={s.skillId} className="card badge-card badge-tile locked">
+                    <BadgeArt roleId={p.roleId} skillId={s.skillId} title={s.label} size={104} locked />
+                    <span className="tier locked">Locked</span>
+                    <h3 className="t-tm">{s.label}</h3>
+                    <p className="t-bm t-secondary">Show {s.target} of {s.anchorsTotal} behaviours in your own words to earn it.</p>
                   </div>
                 ))}
               </div>

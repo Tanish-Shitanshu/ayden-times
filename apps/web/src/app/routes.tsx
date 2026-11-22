@@ -20,6 +20,7 @@ const Privacy = lazy(() => import("../features/privacy/Privacy"));
 const Play = lazy(() => import("../features/play/Play"));
 const Feedback = lazy(() => import("../features/feedback/Feedback"));
 const Traction = lazy(() => import("../features/traction/Traction"));
+const Sample = lazy(() => import("../features/share/Sample"));
 const How = lazy(() => import("../features/how/How"));
 const NotFound = lazy(() => import("../features/common/NotFound"));
 const MockPanel = API_MODE === "mock" ? lazy(() => import("../features/common/MockPanel")) : null;
@@ -59,6 +60,7 @@ const routes: RouteObject[] = [
           { path: "/mission/:missionId/debrief", element: page(<Debrief />) },
           { path: "/progress", element: page(<Progress />) },
           { path: "/progress/:roleId", element: page(<Progress />) },
+          { path: "/s/:token", element: page(<Sample />) },
           { path: "/feedback", element: page(<Feedback />) },
           { path: "/traction", element: page(<Traction />) },
           { path: "/cohort", element: page(<Cohort />) },

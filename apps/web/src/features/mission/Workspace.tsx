@@ -366,7 +366,7 @@ export default function Workspace() {
       <TraceDrawer open={traceOpen} onClose={() => setTraceOpen(false)} trace={M.trace} pinned={pinned && desktop} setPinned={setPinned} />
 
       <Dialog open={mobileObj} onClose={() => setMobileObj(false)} title={t("ws.objectives")} icon="checklist"><ObjectivesBody m={m} onArtifact={openArtifact} /></Dialog>
-      <ConfirmDialog open={exitOpen} onClose={() => setExitOpen(false)} onConfirm={() => nav(exitTo)} title={t("ws.exitTitle")} body={t("ws.exitBody")} confirmLabel={t("common.exit")} cancelLabel={t("common.resume")} swap />
+      <ConfirmDialog open={exitOpen} onClose={() => setExitOpen(false)} onConfirm={() => nav(exitTo, { replace: true })} title={t("ws.exitTitle")} body={t("ws.exitBody")} confirmLabel={t("common.exit")} cancelLabel={t("common.resume")} swap />
       <ConfirmDialog open={finishOpen} onClose={() => setFinishOpen(false)} onConfirm={doFinish} title={t("ws.finishTitle")} body={t("ws.finishBody")} confirmLabel={t("ws.finish")} loading={busy === "finish"} />
       <ConfirmDialog open={variantOpen} onClose={() => setVariantOpen(false)} onConfirm={doVariant} title={t("ws.newVariantTitle")} body={<>{t("ws.newVariantBody")}<br /><span className="t-label">{m.variantLabel}</span></>} confirmLabel={t("ws.newVariant")} loading={busy === "variant"} />
       <ReportDialog open={reportOpen} onClose={() => setReportOpen(false)} m={m} traceIds={M.trace.slice(-5).map((x) => x.id)} />

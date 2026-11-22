@@ -71,9 +71,27 @@ export interface TractionData {
   ratings: number[];
   byRole: { roleId: string; count: number; avgRating: number }[];
   wall: { id: string; name: string; college?: string; roleId?: string; rating: number; comment: string; photo?: string; date: string }[];
-  platform: { missionsStarted: number; missionsCompleted: number };
+  platform: { missionsStarted: number; missionsCompleted: number; visits?: number; uniqueVisitors?: number };
   economics: { aiCostPerMissionUsd: number | null; aiCostPerHourUsd: number | null; tokens: number; totalAiCostUsd: number };
 }
+
+/** What a learner chose to share: public, read-only, revocable. Mirrors apps/api/src/domain/share.ts. */
+export interface WorkSample {
+  token: string;
+  certificateId: string;
+  name: string;
+  roleId: RoleId;
+  roleTitle: string;
+  accentHex: string;
+  issuedAt: string;
+  headline: string;
+  skills: { skillId: string; label: string; state: "strong" | "developing"; anchorsMet: number; anchorsTotal: number; target: number }[];
+  badges: { id: string; skillId: string; title: string }[];
+  moments: { quote: string; why: string; skillLabel: string }[];
+  integrity: { quotesVerified: number; mode: "live" | "scripted" | "cached" };
+  notice: string;
+}
+export interface ShareState { shared: boolean; sample: WorkSample | null }
 
 interface Opts { silent401?: boolean }
 
@@ -138,5 +156,10 @@ export const api = {
   translateUi: (lang: string, strings: Record<string, string>) => request<{ lang: string; strings: Record<string, string> }>("POST", "/i18n/translate", { lang, strings }),
   sendFeedback: (b: FeedbackInput) => request<{ ok: true }>("POST", "/feedback", b),
   getTraction: () => request<TractionData>("GET", "/traction", undefined, { silent401: true }),
+  getShare: (reportId: string) => request<ShareState>("GET", `/reports/${encodeURIComponent(reportId)}/share`),
+  createShare: (reportId: string, name: string) => request<ShareState>("POST", `/reports/${encodeURIComponent(reportId)}/share`, { name }),
+  revokeShare: (reportId: string) => request<ShareState>("DELETE", `/reports/${encodeURIComponent(reportId)}/share`),
+  getSample: (token: string) => request<WorkSample>("GET", `/share/${encodeURIComponent(token)}`, undefined, { silent401: true }),
+  visit: (first: boolean) => request<{ ok: true }>("POST", "/visit", { first }, { silent401: true }),
   health: () => request<{ ok: true }>("GET", "/health"),
 };

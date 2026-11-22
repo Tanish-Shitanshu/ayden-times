@@ -52,6 +52,19 @@ export default function Traction() {
             <Kpi num={String(d.platform.missionsCompleted)} label="Missions completed, all time" hint="Includes our own testing" />
           </div>
 
+          {d.platform.visits !== undefined && (
+            <section aria-labelledby="tr-t" className="stack gap-12">
+              <h2 id="tr-t" className="t-tl">Traffic and funnel</h2>
+              <div className="tr-kpis">
+                <Kpi num={String(d.platform.visits)} label="Visits" hint="Page loads, one per browser tab session" />
+                <Kpi num={String(d.platform.uniqueVisitors ?? 0)} label="New browsers" hint="Seen for the first time" />
+                <Kpi num={String(d.platform.missionsStarted)} label="Simulations started" hint={d.platform.visits ? `${Math.round((d.platform.missionsStarted / d.platform.visits) * 100)}% of visits` : undefined} />
+                <Kpi num={String(d.platform.missionsCompleted)} label="Simulations finished" hint={d.platform.missionsStarted ? `${Math.round((d.platform.missionsCompleted / d.platform.missionsStarted) * 100)}% of those started` : undefined} />
+              </div>
+              <p className="t-label t-secondary">Counted without cookies, names or IP addresses. Bots are excluded. Includes our own visits while building and testing.</p>
+            </section>
+          )}
+
           {d.feedbackCount === 0 ? (
             <EmptyState icon="reviews" title="No feedback yet" body="Be the first. Try a rehearsal and tell us how it went." action={<LinkButton to="/roles" icon="play_arrow">Try Ayden</LinkButton>} />
           ) : (

@@ -182,6 +182,6 @@ export async function buildReport(deps: Deps, args: { session: Session; build: M
 
 /** What the learner sees: strip internal fields. */
 export function publicReport(r: StoredReport): Report {
-  const { uid: _u, defId: _d, kind: _k, variantKey: _v, drillId: _dr, traps: _t, tested: _te, skillRatios: _s, ...rest } = r;
+  const { uid: _u, defId: _d, kind: _k, variantKey: _v, drillId: _dr, traps: _t, tested: _te, skillRatios: _s, share: _sh, ...rest } = r;
   return rest;
 }

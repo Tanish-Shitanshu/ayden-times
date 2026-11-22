@@ -315,6 +315,8 @@ export interface StoredReport extends Report {
   traps: { id: string; label: string; missed: boolean }[];
   tested: string[];
   skillRatios: Record<string, number>;
+  /** Set only when the learner chose to share this report. Deleting it switches the public link off. */
+  share?: { token: string; name: string; createdAt: string };
 }
 
 /** A tester's feedback. The photo (small JPEG data URL) and name are kept only when showPublicly is true. */

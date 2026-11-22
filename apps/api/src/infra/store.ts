@@ -18,6 +18,10 @@ export interface Counters {
   costMicros: number;
   /** Missions finished since token counting began, the denominator for cost per mission. */
   measuredMissions: number;
+  /** Page loads of the site (first-party, no cookies, no IPs, bots excluded). */
+  visits: number;
+  /** Browsers seen for the first time (a flag kept on the device, not an id). */
+  uniqueVisitors: number;
 }
 
 export interface Store {
@@ -67,6 +71,8 @@ export const emptyCounters = (): Counters => ({
   tokens: 0,
   costMicros: 0,
   measuredMissions: 0,
+  visits: 0,
+  uniqueVisitors: 0,
 });
 
 /** In-memory store: used by tests and local dev. Data is lost on restart. */

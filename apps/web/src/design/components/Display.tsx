@@ -83,14 +83,16 @@ export function Stepper({ steps, current }: { steps: string[]; current: number }
   );
 }
 
-/** Back control: uses history when the previous entry is inside the app, else goes to `to`. */
+/**
+ * Back control: always goes to the page it names. It used to step back one history entry, which sent
+ * learners straight back into a simulation they had just left.
+ */
 export function BackLink({ to, label }: { to: string; label: string }) {
   const nav = useNavigate();
   return (
     <a className="back-link" href={to} onClick={(e) => {
       e.preventDefault();
-      const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
-      if (idx > 0) nav(-1); else nav(to);
+      nav(to);
     }}>
       <Icon name="arrow_back" /> {label}
     </a>

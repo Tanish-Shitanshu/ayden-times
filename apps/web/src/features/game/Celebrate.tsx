@@ -48,8 +48,8 @@ export function Celebrate({ report, missionId }: { report: Report; missionId: st
       </div>
       {badges.length > 0 && (
         <ul className="celebrate-badges">
-          {badges.map((b) => (
-            <li key={b.id}><BadgeArt roleId={b.roleId} skillId={b.skillId} size={88} /><b className="t-bm">{b.title}</b></li>
+          {badges.map((b, i) => (
+            <li key={b.id} style={{ animationDelay: `${0.25 + i * 0.18}s` }}><BadgeArt roleId={b.roleId} skillId={b.skillId} title={b.title} size={96} fresh={burst} /><b className="t-bm">{b.title}</b></li>
           ))}
         </ul>
       )}

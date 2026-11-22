@@ -19,6 +19,7 @@ import { finishMission } from "../domain/lifecycle.js";
 import { cohortInsights } from "../domain/privacy.js";
 import { computeProgress } from "../domain/progress.js";
 import { publicReport } from "../domain/report.js";
+import { cleanName, newShareToken, reportIdOfToken, toWorkSample } from "../domain/share.js";
 import { summarise } from "../domain/traction.js";
 import type { CohortRec, RolePack, UserRec } from "../domain/types.js";
 import { ROLES, getRole } from "../roles/index.js";
@@ -248,6 +249,61 @@ export function registerRoutes(app: FastifyInstance, deps: Deps) {
     return publicReport(r);
   });
 
+  /* ───────── share a work sample (opt in, revocable) ───────── */
+
+  const shareSchema = z.object({ name: z.string().max(80) });
+  const shareLimiter = new RateLimiter(20, 60 * 60_000);
+
+  async function ownedReport(uid: string, id: string) {
+    const r = await store.getReport(id);
+    if (!r || r.uid !== uid) throw new ApiError(404, "not_found", "Report not found.");
+    return r;
+  }
+
+  app.get("/reports/:id/share", async (req) => {
+    const user = await requireUser(req, store);
+    const r = await ownedReport(user.id, (req.params as { id: string }).id);
+    const sample = toWorkSample(r);
+    return { shared: !!sample, sample };
+  });
+
+  app.post("/reports/:id/share", async (req) => {
+    const user = await requireUser(req, store);
+    const wait = shareLimiter.check(user.id);
+    if (wait !== null) throw new ApiError(429, "rate_limited", "Please wait a little before changing sharing again.", wait);
+    const r = await ownedReport(user.id, (req.params as { id: string }).id);
+    if (r.status !== "ready") throw new ApiError(409, "conflict", "Finish the report first, then share it.");
+    const name = cleanName(shareSchema.parse(req.body).name);
+    if (!name) throw new ApiError(400, "validation", "Please enter your name using letters only (2 to 60 characters).");
+    r.share = { token: r.share?.token ?? newShareToken(r.id), name, createdAt: r.share?.createdAt ?? nowIso() };
+    await store.putReport(r);
+    return { shared: true, sample: toWorkSample(r) };
+  });
+
+  app.delete("/reports/:id/share", async (req) => {
+    const user = await requireUser(req, store);
+    const r = await ownedReport(user.id, (req.params as { id: string }).id);
+    if (r.share) {
+      delete r.share;
+      await store.putReport(r);
+    }
+    return { shared: false, sample: null };
+  });
+
+  /** Public and read-only. Anyone holding the link can read exactly what the learner chose to share. */
+  const sampleLimiter = new RateLimiter(120, 60_000);
+  app.get("/share/:token", async (req, reply) => {
+    const wait = sampleLimiter.check(req.ip);
+    if (wait !== null) throw new ApiError(429, "rate_limited", "Too many requests. Try again in a moment.", wait);
+    const token = (req.params as { token: string }).token;
+    const id = reportIdOfToken(token.slice(0, 200));
+    const r = id ? await store.getReport(id) : null;
+    const sample = r?.share?.token === token ? toWorkSample(r) : null;
+    if (!sample) throw new ApiError(404, "not_found", "This link is not available. The learner may have switched sharing off.");
+    reply.header("cache-control", "no-store");
+    return sample;
+  });
+
   /* ───────── progress & drills ───────── */
 
   async function progressFor(user: UserRec, roleId: string): Promise<Progress> {
@@ -397,11 +453,43 @@ export function registerRoutes(app: FastifyInstance, deps: Deps) {
     return { ok: true };
   });
 
+  /**
+   * Traffic counter: one call per page load from the browser. No cookie, no IP and no id is stored; the
+   * browser only says whether it has been counted before (a flag on the device). Bots are ignored. Counts are
+   * held in memory and written every 15 s so a burst of visitors never slows or fails a request.
+   */
+  const visitLimiter = new RateLimiter(40, 60_000);
+  const visitBuf = { visits: 0, unique: 0 };
+  const flushVisits = async () => {
+    const v = visitBuf.visits, u = visitBuf.unique;
+    visitBuf.visits = 0;
+    visitBuf.unique = 0;
+    try {
+      if (v) await store.incr("visits", v);
+      if (u) await store.incr("uniqueVisitors", u);
+    } catch {
+      visitBuf.visits += v;
+      visitBuf.unique += u;
+    }
+  };
+  const visitTimer = setInterval(() => void flushVisits(), 15_000);
+  visitTimer.unref();
+  app.addHook("onClose", async () => { clearInterval(visitTimer); await flushVisits(); });
+  app.post("/visit", async (req, reply) => {
+    reply.header("cache-control", "no-store");
+    if (/bot|crawl|spider|headless|preview|monitor/i.test(String(req.headers["user-agent"] ?? ""))) return { ok: true };
+    if (visitLimiter.check(req.ip) !== null) return { ok: true };
+    const b = z.object({ first: z.boolean().optional() }).safeParse(req.body ?? {});
+    visitBuf.visits += 1;
+    if (b.success && b.data.first) visitBuf.unique += 1;
+    return { ok: true };
+  });
+
   /** Public, aggregate-only. Never returns a tester who did not agree to be shown. */
   app.get("/traction", async (_req, reply) => {
     const [items, counters] = await Promise.all([store.listFeedback(500), store.getCounters()]);
     reply.header("cache-control", "public, max-age=10");
-    return summarise(items, { missionsStarted: counters.missionsStarted, missionsCompleted: counters.missionsCompleted }, { tokens: counters.tokens ?? 0, costMicros: counters.costMicros ?? 0, measuredMissions: counters.measuredMissions ?? 0 });
+    return summarise(items, { missionsStarted: counters.missionsStarted, missionsCompleted: counters.missionsCompleted, visits: (counters.visits ?? 0) + visitBuf.visits, uniqueVisitors: (counters.uniqueVisitors ?? 0) + visitBuf.unique }, { tokens: counters.tokens ?? 0, costMicros: counters.costMicros ?? 0, measuredMissions: counters.measuredMissions ?? 0 });
   });
 
   /* ───────── system ───────── */

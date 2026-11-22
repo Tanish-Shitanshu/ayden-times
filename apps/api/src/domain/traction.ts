@@ -22,7 +22,7 @@ export interface TractionSummary {
   byRole: { roleId: string; count: number; avgRating: number }[];
   wall: WallItem[];
   /** Platform-wide counters. These include our own testing, so they are labelled as all-time on the page. */
-  platform: { missionsStarted: number; missionsCompleted: number };
+  platform: { missionsStarted: number; missionsCompleted: number; visits?: number; uniqueVisitors?: number };
   /** Measured from real API usage at published paid-tier prices; null until there is enough data. */
   economics: { aiCostPerMissionUsd: number | null; aiCostPerHourUsd: number | null; tokens: number; totalAiCostUsd: number };
 }
@@ -30,7 +30,7 @@ export interface TractionSummary {
 const r1 = (n: number) => Math.round(n * 10) / 10;
 
 /** Aggregates only. A tester appears on the wall only when they ticked "show my feedback publicly". */
-export function summarise(items: FeedbackRec[], platform: { missionsStarted: number; missionsCompleted: number }, usage: { tokens: number; costMicros: number; measuredMissions: number } = { tokens: 0, costMicros: 0, measuredMissions: 0 }, now = new Date()): TractionSummary {
+export function summarise(items: FeedbackRec[], platform: { missionsStarted: number; missionsCompleted: number; visits?: number; uniqueVisitors?: number }, usage: { tokens: number; costMicros: number; measuredMissions: number } = { tokens: 0, costMicros: 0, measuredMissions: 0 }, now = new Date()): TractionSummary {
   const n = items.length;
   const ratings = [1, 2, 3, 4, 5].map((v) => items.filter((f) => f.rating === v).length);
   const answered = items.filter((f) => typeof f.recommend === "number");

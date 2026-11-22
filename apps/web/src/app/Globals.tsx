@@ -4,7 +4,7 @@ import { Banner, Button, Dialog, SnackbarHost } from "../design/components";
 import { useApp } from "./store";
 import { useT, errorText } from "../lib/i18n";
 import { useOnline } from "../lib/hooks";
-import { setUnauthenticatedHandler } from "../api/client";
+import { api, setUnauthenticatedHandler } from "../api/client";
 
 export function OfflineBanner() {
   const t = useT();
@@ -36,5 +36,15 @@ export function SessionExpiredDialog() {
 export function Globals() {
   const boot = useApp((s) => s.bootLanguage);
   useEffect(() => { boot(); }, [boot]);
+  // One anonymous ping per tab session: no cookie, no id. "first" only says this browser has not been counted before.
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem("ayden:visit")) return;
+      sessionStorage.setItem("ayden:visit", "1");
+      const first = !localStorage.getItem("ayden:seen");
+      localStorage.setItem("ayden:seen", "1");
+      void api.visit(first).catch(() => undefined);
+    } catch { /* storage blocked: skip counting */ }
+  }, []);
   return (<><OfflineBanner /><SessionExpiredDialog /><SnackbarHost /></>);
 }
