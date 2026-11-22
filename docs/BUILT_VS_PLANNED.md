@@ -16,10 +16,16 @@
 - Cross-language colleague: Marco (Milan) speaks Italian; his messages are translated for the learner and the learner's messages reach him in Italian, both with Cloud Translation
 - Cloud Monitoring uptime check and log-based metrics (model fallbacks, sandbox failures)
 
+- Startup CEO decision-making role (22 Nov): hiring decision with real runway numbers, a security incident, an investor who asks to hide it, a customer demanding a date, and an honest board update. Five skills, five drills, three variants, tested end to end in live mode
+- Tester feedback (stars, 0 to 10 recommend, comment, optional photo resized on the device) and a public, aggregate-only `/traction` page. A tester appears only if they ticked the box. Counters on it come from the database; nothing is hard-coded
+- Measured AI cost per mission and per hour, counted from Gemini's reported token usage at published paid-tier prices (shown on `/traction`)
+- Gemini key failover: `GEMINI_API_KEY_BACKUP` and `GEMINI_API_KEY_BACKUP_2` take over on quota or key errors (the backup is only used if set)
+- Completion sounds (synthesised in the browser; an optional recorded file in `public/sounds/` overrides them) with an on/off switch
+
 ## Planned (not built)
 - Data Analyst role with real BigQuery SQL
 - Google sign-in
 - ADK / Agent Runtime orchestration (agents currently use the Gemini Interactions API directly)
-- Gemini Live voice (verbal SBAR), generated images, Lyria sound
+- Gemini Live voice (verbal SBAR), Lyria-generated sound files (the synthesised chime is built; a Lyria clip can replace it)
 - "Full day" mission mode; company-SOP Role Compiler; Gym API for AI agents; calibration against job performance
 - Hindi mission content (UI chrome only in v1)

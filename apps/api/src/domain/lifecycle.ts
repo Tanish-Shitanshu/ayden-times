@@ -20,5 +20,6 @@ export async function finishMission(deps: Deps, uid: string, id: string): Promis
   session.reportId = report.id;
   await store.putSession(session);
   await store.incr("missionsCompleted");
+  await store.incr("measuredMissions");
   return { reportId: report.id, status: "ready" };
 }

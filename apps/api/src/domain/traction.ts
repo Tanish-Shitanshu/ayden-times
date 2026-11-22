@@ -30,7 +30,7 @@ export interface TractionSummary {
 const r1 = (n: number) => Math.round(n * 10) / 10;
 
 /** Aggregates only. A tester appears on the wall only when they ticked "show my feedback publicly". */
-export function summarise(items: FeedbackRec[], platform: { missionsStarted: number; missionsCompleted: number }, usage: { tokens: number; costMicros: number } = { tokens: 0, costMicros: 0 }, now = new Date()): TractionSummary {
+export function summarise(items: FeedbackRec[], platform: { missionsStarted: number; missionsCompleted: number }, usage: { tokens: number; costMicros: number; measuredMissions: number } = { tokens: 0, costMicros: 0, measuredMissions: 0 }, now = new Date()): TractionSummary {
   const n = items.length;
   const ratings = [1, 2, 3, 4, 5].map((v) => items.filter((f) => f.rating === v).length);
   const answered = items.filter((f) => typeof f.recommend === "number");
@@ -62,8 +62,8 @@ export function summarise(items: FeedbackRec[], platform: { missionsStarted: num
     platform,
     economics: {
       // Average mission is about 22 minutes, so an hour of use is a little under three missions.
-      aiCostPerMissionUsd: platform.missionsCompleted >= 3 && usage.costMicros > 0 ? Math.round((usage.costMicros / 1e6 / platform.missionsCompleted) * 1000) / 1000 : null,
-      aiCostPerHourUsd: platform.missionsCompleted >= 3 && usage.costMicros > 0 ? Math.round((usage.costMicros / 1e6 / platform.missionsCompleted) * (60 / 22) * 1000) / 1000 : null,
+      aiCostPerMissionUsd: usage.measuredMissions >= 3 && usage.costMicros > 0 ? Math.round((usage.costMicros / 1e6 / usage.measuredMissions) * 1000) / 1000 : null,
+      aiCostPerHourUsd: usage.measuredMissions >= 3 && usage.costMicros > 0 ? Math.round((usage.costMicros / 1e6 / usage.measuredMissions) * (60 / 22) * 1000) / 1000 : null,
       tokens: usage.tokens,
       totalAiCostUsd: Math.round(usage.costMicros / 1e4) / 100,
     },

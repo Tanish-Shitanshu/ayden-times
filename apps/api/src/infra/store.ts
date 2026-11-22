@@ -16,6 +16,8 @@ export interface Counters {
   tokens: number;
   /** AI cost in micro-dollars (1,000,000 = $1) at the published paid-tier list prices. */
   costMicros: number;
+  /** Missions finished since token counting began, the denominator for cost per mission. */
+  measuredMissions: number;
 }
 
 export interface Store {
@@ -64,6 +66,7 @@ export const emptyCounters = (): Counters => ({
   speech: 0,
   tokens: 0,
   costMicros: 0,
+  measuredMissions: 0,
 });
 
 /** In-memory store: used by tests and local dev. Data is lost on restart. */

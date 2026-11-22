@@ -414,7 +414,7 @@ const varsFor = (seed: string): Vars => {
     seedGen: seed,
     allowedJson: JSON.stringify(allowed(g)),
     run0: String(g.run0), run1: String(g.run1), run2: String(g.run2), run3: String(g.run3), run3c: String(g.run3c),
-    topic: "startup CEO decisions",
+    topic: "the hiring request, a security incident and the biggest customer",
   };
 };
 

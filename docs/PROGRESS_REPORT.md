@@ -102,3 +102,19 @@ gcloud run deploy ayden-app --source . --region asia-south1 --project ayden-buil
 ```
 
 On Windows PowerShell use `gcloud.cmd` (the `.ps1` is blocked by the execution policy). Required IAM for the deploying user: Cloud Run Admin, Cloud Build Editor, Service Account User, Storage Admin, Artifact Registry Writer, Service Usage Consumer, and Secret Manager Admin to change the key.
+
+## 9. 22 Nov update (investor round prep)
+
+Read this before touching the same files. Everything below is committed on `main`.
+
+- **New role `executive`** (Startup CEO, decision-making): `apps/api/src/roles/executive.ts`. `RoleId` gains `"executive"` in both contract copies (logged in `CONTRACT_CHANGES.md`). End-to-end test: `apps/api/test/executive.e2e.test.ts`.
+- **Feedback and traction**: `POST /api/v1/feedback` (needs a session) and public `GET /api/v1/traction` (aggregates and consented testimonials only). Store gained `putFeedback` and `listFeedback` in both backends; deleting a user deletes their feedback. Web: `/feedback`, `/traction`, a form on the report page, a landing strip that only appears at 5 or more responses.
+- **Measured AI cost**: counters `tokens`, `costMicros` and `measuredMissions` (flushed from memory every 15 s so counting cannot slow or fail a request). Shown on `/traction`.
+- **Key failover**: `apps/api/src/infra/keyring.ts`. `config.geminiKey` is now a getter. Add `GEMINI_API_KEY_BACKUP` (Secret Manager secret plus `--update-secrets`) to use it. No backup is connected yet; the one tried returned 402 (no credits).
+- **Sandbox**: the runner retries when the model garbles the base64 payload (`isTransportFailure`).
+- **Report**: key moments now show one entry per message with the fullest quote.
+- **Sounds**: `apps/web/src/lib/sound.ts`, hooked into the celebration card and beat advance.
+- **Renamed** the consulting role title to "Consulting Analyst (Business Strategy)" because the scenario is a retail margin review. The role id `tech-consulting` is unchanged.
+- Docs: `docs/FOUNDER_BRIEF.md`, `docs/UNIT_ECONOMICS.md`, `docs/URL_AND_MEDIA.md`.
+
+**One thing to decide (Tanish owns billing):** Google's free Gemini tier may use content to improve its products; the paid tier does not. Turn billing on before real students use it at scale. Cost stays in cents per learner.
