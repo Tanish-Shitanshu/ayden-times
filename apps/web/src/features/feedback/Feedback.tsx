@@ -3,7 +3,7 @@ import type { RoleId } from "../../contract";
 import { BackLink } from "../../design/components";
 import { FeedbackForm } from "./FeedbackForm";
 
-const ROLES: RoleId[] = ["software-engineer", "tech-consulting", "nurse", "banking-ops", "executive", "data-analyst"];
+const ROLES: RoleId[] = ["software-engineer", "finance-analyst", "procurement", "marketing", "tech-consulting", "nurse", "banking-ops", "executive", "data-analyst"];
 
 /** A standalone page testers can open from a link or a QR code. */
 export default function Feedback() {

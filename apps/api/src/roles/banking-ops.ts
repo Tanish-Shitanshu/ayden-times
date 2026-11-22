@@ -279,6 +279,7 @@ const DRILLS: DrillDef[] = [
 
 export const bankingOps: RolePack = {
   id: ROLE,
+  hidden: true,
   status: "ready",
   title: "Banking Operations Associate (KYC & Payments)",
   tagline: "Hold the line when a manager says 'just click release'.",

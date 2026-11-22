@@ -315,6 +315,7 @@ const DRILLS: DrillDef[] = [
 
 export const nurse: RolePack = {
   id: ROLE,
+  hidden: true,
   status: "ready",
   title: "Staff Nurse (Ward)",
   tagline: "A night-shift handover where the details matter.",

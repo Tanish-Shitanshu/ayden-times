@@ -440,6 +440,7 @@ const DRILLS: DrillDef[] = [
 
 export const executive: RolePack = {
   id: ROLE,
+  hidden: true,
   status: "ready",
   title: "Startup CEO (Decision-Making)",
   tagline: "Decide with the numbers, and tell the truth when it costs you.",

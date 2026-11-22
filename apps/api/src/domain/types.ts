@@ -234,6 +234,8 @@ export interface SkillMeta extends Omit<SkillDef, "anchors"> {
 
 export interface RolePack {
   id: RoleId;
+  /** Kept in the code (and reachable by id) but not listed. */
+  hidden?: boolean;
   status: "ready" | "planned";
   title: string;
   tagline: string;

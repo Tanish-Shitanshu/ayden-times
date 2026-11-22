@@ -2,6 +2,8 @@ import type { WorkItem } from "@ayden/contract";
 import { firstSentence, int, pick, rng, said, wordCount } from "../domain/text.js";
 import type { AnchorDef, DrillDef, EngineCtx, MissionBuild, MissionDef, RolePack, ScriptedEvent, Vars } from "../domain/types.js";
 import { AGENT_LABEL, hit, person, say, sys, trapFrom } from "./helpers.js";
+import { CONTROL_ANCHORS, CONTROL_DRILLS, CONTROL_MISSION, CONTROL_SKILLS } from "./consulting-controls.js";
+import { near, parseSheet, findRow } from "./sheet.js";
 
 const ROLE = "tech-consulting" as const;
 const COMPANY = "Northbridge Advisory (fictional)";
@@ -21,16 +23,17 @@ const SKILLS = [
   { id: "numbers_integrity", label: "Numbers that tie to the data", description: "Every number you cite is in the data or derived from it. Flag data conflicts.", targetLevel: 2, badge: "Numbers that tie" },
   { id: "scope_mgmt", label: "Manage scope and confidence", description: "Do not agree to extra work directly. Loop in your manager. State your confidence.", targetLevel: 2, badge: "Protected the scope" },
   { id: "stakeholder_comm", label: "Communicate to a senior client", description: "Be concise and respectful and propose a next step with an owner.", targetLevel: 2, badge: "Client-ready communication" },
+  { id: "recommend", label: "Say what to do about it", description: "Put a rupee figure on the impact, recommend an action, name a risk, and give the next step.", targetLevel: 3, badge: "Recommended with impact" },
 ];
 
-interface Gen {
+export interface Gen {
   cats: string[];
   s0: number[]; s1: number[]; m0: number[]; m1: number[];
   total0: number; total1: number; drop: number; mix: number; rate: number; mixShare: number;
-  fin: number; ops: number;
+  fin: number; ops: number; impact: number;
 }
 
-function gen(seed: string): Gen {
+export function gen(seed: string): Gen {
   const r = rng(seed);
   const names = pick(r, [["Fresh produce", "Packaged foods", "Private label"], ["Dairy", "Beverages", "Value range"], ["Bakery", "Household", "Store brand"]]);
   const cShift = int(r, 8, 12);
@@ -47,14 +50,14 @@ function gen(seed: string): Gen {
   const rate = s1.reduce((a, v, i) => a + (v / 100) * (m1[i]! - m0[i]!), 0);
   const drop = total0 - total1;
   const fin = int(r, 410, 480);
-  return { cats: names, s0, s1, m0, m1, total0, total1, drop, mix: -mix, rate: -rate, mixShare: Math.round((mix / (mix + rate)) * 100), fin, ops: Math.round(fin * 1.021 * 10) / 10 };
+  return { cats: names, s0, s1, m0, m1, total0, total1, drop, mix: -mix, rate: -rate, mixShare: Math.round((mix / (mix + rate)) * 100), fin, ops: Math.round(fin * 1.021 * 10) / 10, impact: Math.round(fin * drop * 10) / 1000 };
 }
 
 const r1 = (n: number) => Math.round(n * 10) / 10;
 
 /** Numbers a learner may legitimately cite. */
 function allowed(g: Gen): number[] {
-  const out = [...g.s0, ...g.s1, ...g.m0, ...g.m1, g.total0, g.total1, g.drop, g.mix, g.rate, g.mixShare, 100 - g.mixShare, g.fin, g.ops, 1.4, 2.1, g.fin * 0.021];
+  const out = [...g.s0, ...g.s1, ...g.m0, ...g.m1, g.total0, g.total1, g.drop, g.mix, g.rate, g.mixShare, 100 - g.mixShare, g.fin, g.ops, 1.4, 2.1, g.fin * 0.021, g.impact, g.fin * g.mix / 100, g.fin * g.rate / 100];
   for (let i = 0; i < 3; i++) out.push(g.s1[i]! - g.s0[i]!, g.m0[i]! - g.m1[i]!);
   return out.flatMap((n) => [n, r1(n), Math.round(n)]);
 }
@@ -160,6 +163,44 @@ const ANCHORS: AnchorDef[] = [
     judgeInstruction: "Did the learner propose a concrete next step and say who owns it?",
     eval: (c) => hit(said(c.events, /(next step|next|will|by (mon|tue|wed|thu|fri|tomorrow|end of day|eod)|we (will|can)|rhea)/i, { to: "sethi" })),
   },
+  {
+    id: "asked_objective", skillId: "structure", kind: "code", text: "Asked what decision the client needs to make",
+    eval: (c) => hit(said(c.events, /(decision|objective|what (does|do) (he|they|the client) (want|need)|goal|success|who (is|are)|what.{0,20}(for|use)|by when|deadline|scope)/i, { to: "rhea" })),
+  },
+  {
+    id: "bridge_values", skillId: "numbers_integrity", kind: "code", text: "Margin bridge ties: last year, mix, rate and this year",
+    eval: (c) => {
+      const g = gen(c.vars.seedGen!);
+      const rows = parseSheet(c.artifacts["ar_bridge"] ?? "");
+      const has = (re: RegExp, target: number) => { const r = findRow(rows, re); return !!r && r.nums.some((n) => near(Math.abs(n), target, 0.06)); };
+      const ok = [has(/last year/i, g.total0), has(/mix/i, g.mix), has(/rate|within|price|cost/i, g.rate), has(/this year/i, g.total1)];
+      return { met: ok.filter(Boolean).length === 4, seq: c.session.artifacts["ar_bridge"]?.seq, note: `${ok.filter(Boolean).length} of 4 bridge rows tie. Last year ${r1(g.total0)}%, mix -${r1(g.mix)}, rate -${r1(g.rate)}, this year ${r1(g.total1)}%.` };
+    },
+  },
+  {
+    id: "quantified_impact", skillId: "recommend", kind: "code", text: "Puts a rupee figure on the impact",
+    eval: (c) => {
+      const g = gen(c.vars.seedGen!);
+      const t = c.artifacts["ar_update"] ?? "";
+      const nums = [...t.matchAll(/(\d+(?:\.\d+)?)\s?(?:crore|cr\b)/gi)].map((m) => parseFloat(m[1]!));
+      return { met: nums.some((n) => near(n, g.impact, 0.4)), seq: c.session.artifacts["ar_update"]?.seq, note: `The margin fall is worth about ₹${g.impact} crore of gross profit on ₹${g.fin} crore revenue.` };
+    },
+  },
+  {
+    id: "recommendation", skillId: "recommend", kind: "code", text: "Recommends a specific action",
+    eval: (c) => {
+      const t = c.artifacts["ar_update"] ?? "";
+      return { met: /(recommend|should|propose|suggest|we (will|can) )/i.test(t) && /(assortment|range|pricing|price|promo|shelf|space|pack|bundle|private label|mix|rebalanc|margin)/i.test(t), seq: c.session.artifacts["ar_update"]?.seq, note: "Say what the client should do about the mix, for example rebalancing the range or promotions." };
+    },
+  },
+  {
+    id: "risk_and_next", skillId: "recommend", kind: "judge", text: "Names a risk or caveat and a next step", judgeInstruction: "Does the summary name one risk or caveat (for example the revenue data conflict) and a concrete next step?",
+    eval: (c) => ({ met: /(risk|caveat|assum|confiden|depends|reconcil|discrepan)/i.test(c.artifacts["ar_update"] ?? "") && /(next step|by (mon|tue|wed|thu|fri|tomorrow|end of)|we will|i will|rhea will|owner)/i.test(c.artifacts["ar_update"] ?? ""), seq: c.session.artifacts["ar_update"]?.seq }),
+  },
+  {
+    id: "stated_source", skillId: "recommend", kind: "code", text: "Said which revenue source the figure uses",
+    eval: (c) => ({ met: /(finance (ledger|figure|number)|ledger|ops (system|figure)|operations (system|figure)|source)/i.test(`${c.artifacts["ar_update"] ?? ""}\n${c.artifacts["ar_bridge"] ?? ""}`), seq: c.session.artifacts["ar_update"]?.seq, note: "Say whether the rupee figure uses the finance ledger or the operations system." }),
+  },
 ];
 
 function build(args: { variantIndex: number; vars: Vars; drill?: DrillDef }): MissionBuild {
@@ -170,6 +211,16 @@ function build(args: { variantIndex: number; vars: Vars; drill?: DrillDef }): Mi
     { id: "it_margin", type: "table", title: "Margin by category", columns: ["Category", "Revenue share last year (%)", "Revenue share this year (%)", "Margin last year (%)", "Margin this year (%)"], rows: g.cats.map((c, i) => [c, g.s0[i]!, g.s1[i]!, g.m0[i]!, g.m1[i]!]), note: `Overall gross margin: ${r1(g.total0)}% last year, ${r1(g.total1)}% this year.` },
     { id: "it_supplier", type: "table", title: "Supplier price change", columns: ["Category", "Supplier price change this year (%)"], rows: g.cats.map((c) => [c, 1.4]) },
     { id: "it_recon", type: "table", title: "Total revenue, two sources (₹ crore)", columns: ["Source", "Total revenue"], rows: [["Finance ledger", g.fin], ["Operations system", g.ops]], note: "The two sources disagree." },
+    { id: "it_method", type: "doc", title: "How to build a margin bridge", markdown: `# Margin bridge (standard method)
+
+A **bridge** splits the change in gross margin (in percentage points) into causes.
+
+- **Mix effect** = sum over categories of (share this year minus share last year) x margin last year. It shows what the shift between categories did.
+- **Rate effect** = sum over categories of share this year x (margin this year minus margin last year). It shows what a change in the margin *within* each category did.
+- Last year's margin + mix effect + rate effect = this year's margin.
+- **Impact in rupees** = this year's revenue x the fall in margin points / 100.
+
+Use the finance ledger revenue unless told otherwise, and say which source you used.` },
     { id: "it_email", type: "doc", title: "Client email", markdown: "**From:** Arvind Sethi (CFO, FreshCart)\n\nWhy did our gross margin fall this year? Please send your view before our 4 pm call." },
   ];
   const allBeats = [
@@ -186,9 +237,15 @@ function build(args: { variantIndex: number; vars: Vars; drill?: DrillDef }): Mi
       advanceWhen: { t: "artifact" as const, id: "ar_tree" },
     },
     {
-      title: "Write the update",
-      objective: "Write a short update to Rhea for the 4 pm call: the answer first, then 2 or 3 reasons.",
-      onEnter: [say("rhea", "Nice. Now send me the headline I can use on the call. Answer first, please. Keep it short.")],
+      title: "Build the margin bridge",
+      objective: "Use the margin table and the method note to split the fall in margin into mix and rate effects, in Excel. Submit the bridge as a spreadsheet.",
+      onEnter: [say("rhea", "Good. Before we write anything, I want the numbers: a margin bridge, last year to this year, split into mix and rate. The method is in your work items. Send it as a spreadsheet.", { quickReplies: ["Which revenue figure do I use?", "How do I treat the data conflict?"] })],
+      advanceWhen: { t: "artifact" as const, id: "ar_bridge" },
+    },
+    {
+      title: "Write the executive summary",
+      objective: "Write the one-paragraph executive summary for the 4 pm call: the answer first with a number, the ₹ impact, two reasons, a recommendation, one risk and the next step. 150 words or fewer. You can export it as a PDF.",
+      onEnter: [say("rhea", "Nice. Now the headline I can use on the call. Answer first, the rupee impact, what you recommend, and the next step. Keep it short.")],
       advanceWhen: { t: "artifact" as const, id: "ar_update" },
     },
     {
@@ -228,7 +285,8 @@ function build(args: { variantIndex: number; vars: Vars; drill?: DrillDef }): Mi
     items,
     artifacts: [
       { id: "ar_tree", kind: "text", title: "Issue tree", instructions: "List the branches you will test (non-overlapping) and your first hypothesis.", template: "Question: why did gross margin fall?\n- Branch 1:\n- Branch 2:\n- Branch 3:\nHypothesis:\n", required: true, maxChars: 1500 },
-      { id: "ar_update", kind: "email", title: "Update to Rhea", instructions: "Answer first with a number, then 2 or 3 reasons. Under 150 words. Mention data caveats.", template: "Hi Rhea,\n\n", required: true, maxChars: 1500 },
+      { id: "ar_bridge", kind: "spreadsheet", title: "Margin bridge", instructions: "Four rows: margin last year, mix effect, rate effect, margin this year, all in percentage points. Upload an .xlsx, or fill in the table. Cells are separated by | .", template: "Item | Percentage points\nMargin last year | \nMix effect | \nRate effect | \nMargin this year | \n", required: true, maxChars: 1500 },
+      { id: "ar_update", kind: "email", title: "Executive summary", instructions: "Answer first with a number, the rupee impact, 2 or 3 reasons, a recommendation, one risk and the next step. Under 150 words. Mention data caveats. Use Export PDF to send it.", template: "Hi Rhea,\n\n", required: true, maxChars: 1500 },
     ],
     beats,
     triggers: [],
@@ -256,6 +314,10 @@ function build(args: { variantIndex: number; vars: Vars; drill?: DrillDef }): Mi
     judgeContext: `A graduate consultant must explain a margin fall of ${r1(g.drop)} points. The true cause is mostly mix shift (${g.mixShare}% of the drop), not supplier prices. Finance and ops revenue totals disagree by about 2%. The client CFO jumps to supplier prices and asks for an out-of-scope store-staffing analysis.`,
     onSubmit: async (ctx) => {
       if (ctx.artifactId === "ar_tree") return { events: [say("rhea", ctx.content.split("\n").filter((l) => /^\s*([-*•]|\d+[.)])/.test(l)).length >= 3 ? "Good structure. Test mix first, I suspect it matters most." : "I can only see a couple of branches. Think price, volume, mix and cost.")] };
+      if (ctx.artifactId === "ar_bridge") {
+        const rows = parseSheet(ctx.content).filter((r) => r.nums.length >= 1);
+        return { events: [say("rhea", rows.length >= 4 ? "Thanks. That tells us where to look. Now the summary for the call." : "I need all four rows: last year, mix effect, rate effect, this year.")] };
+      }
       if (ctx.artifactId !== "ar_update") return { events: [] };
       const first = firstSentence(body(ctx.content));
       const claimsSupplier = /supplier/i.test(first) && !/mix/i.test(first);
@@ -280,10 +342,10 @@ const varsFor = (seed: string): Vars => {
 
 const MISSION: MissionDef = {
   id: "cons-margin-review",
-  title: "Why did the client's margin fall?",
+  title: "Why did the client's margin fall, and what should they do?",
   kind: "mission",
-  estMinutes: 20,
-  description: "Structure the problem, write an answer-first update with numbers that tie to the data, flag a data conflict, and handle a client who jumps to the wrong conclusion and asks for out-of-scope work.",
+  estMinutes: 25,
+  description: "A strategy-style case. Structure the problem, build a margin bridge in Excel, put a rupee figure on the impact, write an answer-first executive summary with a recommendation, flag a data conflict, and handle a client who jumps to the wrong conclusion and asks for out-of-scope work.",
   skillIds: SKILLS.map((s) => s.id),
   variants: 3,
   varsFor,
@@ -291,27 +353,28 @@ const MISSION: MissionDef = {
 };
 
 const DRILLS: DrillDef[] = [
-  { id: "cons-drill-answer-first", skillId: "answer_first", title: "Write the headline first", description: "A fresh dataset. Write an update where the first sentence is the answer.", estMinutes: 8, missionId: MISSION.id, beats: [1, 2], hint: "First sentence: what happened and by how much. Then 2 or 3 reasons.", descriptor: "answer first headline short update numbers reasons" },
-  { id: "cons-drill-numbers", skillId: "numbers_integrity", title: "Make every number tie to the data", description: "Check each number against the tables and flag the data conflict.", estMinutes: 8, missionId: MISSION.id, beats: [1, 2], hint: "Cite only numbers from the tables or derived from them. Flag where sources disagree.", descriptor: "numbers tie data conflict discrepancy mix supplier" },
-  { id: "cons-drill-scope", skillId: "scope_mgmt", title: "Say no to scope creep politely", description: "The client asks for extra work. Route it through your manager.", estMinutes: 5, missionId: MISSION.id, beats: [3], hint: "Do not agree directly. Involve Rhea and state your confidence.", descriptor: "scope creep client extra analysis manager change request confidence" },
+  { id: "cons-drill-answer-first", skillId: "answer_first", title: "Write the headline first", description: "A fresh dataset. Write an update where the first sentence is the answer.", estMinutes: 8, missionId: MISSION.id, beats: [2, 3], hint: "First sentence: what happened and by how much. Then 2 or 3 reasons.", descriptor: "answer first headline short update numbers reasons" },
+  { id: "cons-drill-numbers", skillId: "numbers_integrity", title: "Make every number tie to the data", description: "Build the margin bridge and flag the data conflict.", estMinutes: 8, missionId: MISSION.id, beats: [1, 2], hint: "Cite only numbers from the tables or derived from them. Flag where sources disagree.", descriptor: "numbers tie data conflict discrepancy mix supplier" },
+  { id: "cons-drill-scope", skillId: "scope_mgmt", title: "Say no to scope creep politely", description: "The client asks for extra work. Route it through your manager.", estMinutes: 5, missionId: MISSION.id, beats: [4], hint: "Do not agree directly. Involve Rhea and state your confidence.", descriptor: "scope creep client extra analysis manager change request confidence" },
+  { id: "cons-drill-recommend", skillId: "recommend", title: "Put a rupee figure on it and recommend", description: "Turn the margin fall into rupees and say what to do.", estMinutes: 7, missionId: MISSION.id, beats: [3], hint: "Revenue x the fall in margin points / 100. Then a recommendation, a risk and a next step.", descriptor: "recommendation rupee impact next step risk executive summary" },
   { id: "cons-drill-structure", skillId: "structure", title: "Build a MECE issue tree", description: "Write non-overlapping branches and a hypothesis.", estMinutes: 6, missionId: MISSION.id, beats: [0, 1], hint: "Price, volume, mix, cost. State a hypothesis.", descriptor: "issue tree mece branches hypothesis" },
-  { id: "cons-drill-client", skillId: "stakeholder_comm", title: "Reply to a senior client", description: "Be concise and propose a next step with an owner.", estMinutes: 5, missionId: MISSION.id, beats: [3], hint: "Under 90 words. Say who does what by when.", descriptor: "client communication concise next step owner" },
+  { id: "cons-drill-client", skillId: "stakeholder_comm", title: "Reply to a senior client", description: "Be concise and propose a next step with an owner.", estMinutes: 5, missionId: MISSION.id, beats: [4], hint: "Under 90 words. Say who does what by when.", descriptor: "client communication concise next step owner" },
 ];
 
 export const techConsulting: RolePack = {
   id: ROLE,
   status: "ready",
-  title: "Consulting Analyst (Business Strategy)",
-  tagline: "Answer first, numbers that tie, and a client who wants more.",
+  title: "Consulting and Advisory Analyst",
+  tagline: "Structure it, prove it with numbers, recommend, and stay independent.",
   domain: "Consulting",
   company: COMPANY,
-  estMinutes: 20,
+  estMinutes: 25,
   icon: "insights",
   accentHex: "#d93025",
-  description: "Your first project at a consulting firm. Structure the problem, write an update that leads with the answer, make every number tie to the data, flag a data conflict, and handle a client CFO who jumps to the wrong conclusion and asks for extra work.",
-  whatYouWillPractise: ["Structuring a problem without overlap (MECE)", "Leading with the answer, briefly", "Making numbers tie to the data", "Flagging data conflicts and stating confidence", "Managing scope and talking to a senior client"],
-  skills: SKILLS,
-  anchors: ANCHORS,
+  description: "The first projects of a graduate at a strategy or Big-4 style advisory firm. Mission 1 (strategy): structure a margin problem, build a margin bridge in Excel, put a rupee figure on it, and recommend, while handling a CFO who jumps to the wrong answer. Mission 2 (advisory): test a payment sample against a control, rate each exception, write an honest finding, and stay independent when the client wants it softened. Practice for these firms; not affiliated with any of them.",
+  whatYouWillPractise: ["Structuring a problem without overlap (MECE) and stating a hypothesis", "A margin bridge in Excel: mix versus rate", "An answer-first executive summary with a rupee impact and a recommendation", "Testing a sample against a control and rating each exception", "Independence: not softening a finding, not sharing a draft", "Managing scope and talking to a senior client"],
+  skills: [...SKILLS, ...CONTROL_SKILLS],
+  anchors: [...ANCHORS, ...CONTROL_ANCHORS],
   cast: [
     { id: "rhea", name: "Rhea Kulkarni", title: "Engagement Manager", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Wants the answer first, short, with numbers that tie." },
     { id: "imran", name: "Imran Qureshi", title: "Analyst teammate", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Shares data and spots a discrepancy." },
@@ -323,9 +386,11 @@ export const techConsulting: RolePack = {
     { id: "cons-numbers", typicalWeek: 1, title: "Do a first data pull and sanity check", description: "Numbers tie and conflicts are flagged.", skillIds: ["numbers_integrity"], coveredBy: { kind: "mission", id: MISSION.id }, requires: ["numbers_integrity"] },
     { id: "cons-update", typicalWeek: 2, title: "Send a first structured, answer-first update", description: "Structure and lead with the answer.", skillIds: ["structure", "answer_first"], coveredBy: { kind: "mission", id: MISSION.id }, requires: ["structure", "answer_first"] },
     { id: "cons-client", typicalWeek: 4, title: "Speak to a senior client", description: "Concise, with next steps.", skillIds: ["stakeholder_comm"], coveredBy: { kind: "mission", id: MISSION.id }, requires: ["stakeholder_comm"] },
+    { id: "cons-recommend", typicalWeek: 4, title: "Quantify the impact and recommend", description: "A rupee figure, an action, a risk and a next step.", skillIds: ["recommend"], coveredBy: { kind: "mission", id: MISSION.id }, requires: ["recommend"] },
+    { id: "cons-controls", typicalWeek: 4, title: "Test a control and write a finding", description: "Advisory mission: test, rate and report honestly.", skillIds: ["test_sample", "rate_risk", "write_finding", "independence"], coveredBy: { kind: "mission", id: CONTROL_MISSION.id }, requires: ["test_sample", "write_finding"] },
     { id: "cons-slide", typicalWeek: 8, title: "Own a workstream slide", description: "Planned for a later version.", skillIds: [], coveredBy: null },
     { id: "cons-module", typicalWeek: 12, title: "Lead a module", description: "Planned for a later version.", skillIds: [], coveredBy: null },
   ],
-  missions: [MISSION],
-  drills: DRILLS,
+  missions: [MISSION, CONTROL_MISSION],
+  drills: [...DRILLS, ...CONTROL_DRILLS],
 };

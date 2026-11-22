@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
 import type {
@@ -40,7 +40,7 @@ const actSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("finish"), clientSeq: z.number().int().min(0) }),
 ]);
 
-const roleIds = ["software-engineer", "tech-consulting", "nurse", "banking-ops", "executive", "data-analyst"] as const;
+const roleIds = ["software-engineer", "tech-consulting", "nurse", "banking-ops", "executive", "data-analyst", "finance-analyst", "procurement", "marketing"] as const;
 const createSchema = z.object({
   roleId: z.enum(roleIds),
   missionId: z.string().max(60).optional(),
@@ -157,7 +157,7 @@ export function registerRoutes(app: FastifyInstance, deps: Deps) {
 
   /* ───────── roles ───────── */
 
-  app.get("/roles", async () => ROLES.map(summary));
+  app.get("/roles", async () => ROLES.filter((r) => !r.hidden).map(summary));
 
   app.get("/roles/:roleId", async (req) => {
     const role = getRole((req.params as { roleId: string }).roleId);
@@ -490,6 +490,32 @@ export function registerRoutes(app: FastifyInstance, deps: Deps) {
     const [items, counters] = await Promise.all([store.listFeedback(500), store.getCounters()]);
     reply.header("cache-control", "public, max-age=10");
     return summarise(items, { missionsStarted: counters.missionsStarted, missionsCompleted: counters.missionsCompleted, visits: (counters.visits ?? 0) + visitBuf.visits, uniqueVisitors: (counters.uniqueVisitors ?? 0) + visitBuf.unique }, { tokens: counters.tokens ?? 0, costMicros: counters.costMicros ?? 0, measuredMissions: counters.measuredMissions ?? 0 });
+  });
+
+
+  /* ───────── admin: review and remove feedback (token protected; off unless ADMIN_TOKEN is set) ───────── */
+
+  const adminLimiter = new RateLimiter(60, 15 * 60_000);
+  const adminOk = (req: FastifyRequest): void => {
+    if (!config.adminToken) throw new ApiError(404, "not_found", "Not found.");
+    const wait = adminLimiter.check(req.ip);
+    if (wait !== null) throw new ApiError(429, "rate_limited", "Too many attempts. Try again later.", wait);
+    const got = Buffer.from(String(req.headers["x-admin-token"] ?? ""));
+    const want = Buffer.from(config.adminToken);
+    if (got.length !== want.length || !timingSafeEqual(got, want)) throw new ApiError(403, "forbidden", "Wrong admin token.");
+  };
+  app.get("/admin/feedback", async (req, reply) => {
+    adminOk(req);
+    reply.header("cache-control", "no-store");
+    return { items: await store.listFeedback(500) };
+  });
+  app.delete("/admin/feedback/:id", async (req, reply) => {
+    adminOk(req);
+    reply.header("cache-control", "no-store");
+    const id = (req.params as { id: string }).id;
+    const ok = await store.deleteFeedback(id);
+    if (!ok) throw new ApiError(404, "not_found", "No such feedback.");
+    return { deleted: true };
   });
 
   /* ───────── system ───────── */

@@ -52,6 +52,8 @@ export interface Store {
   putFeedback(f: FeedbackRec): Promise<void>;
   /** Newest first. */
   listFeedback(limit: number): Promise<FeedbackRec[]>;
+  /** Admin removal only. Feedback can be removed, never added or edited, by an admin. */
+  deleteFeedback(id: string): Promise<boolean>;
 
   incr(counter: keyof Counters, by?: number): Promise<void>;
   getCounters(): Promise<Counters>;
@@ -160,6 +162,9 @@ export class MemoryStore implements Store {
   }
   async putFeedback(f: FeedbackRec) {
     this.feedback.set(f.id, clone(f)!);
+  }
+  async deleteFeedback(id: string) {
+    return this.feedback.delete(id);
   }
   async listFeedback(limit: number) {
     return [...this.feedback.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, limit).map((f) => clone(f)!);

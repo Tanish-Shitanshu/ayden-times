@@ -54,7 +54,10 @@ export async function buildReport(deps: Deps, args: { session: Session; build: M
   };
 
   const uncertainSkills = new Set<string>();
-  const skills: SkillResult[] = role.skills.map((sk) => {
+  /** A report lists only the skills of the mission it came from, so a role with two missions does not show the other mission's skills as "not tested". */
+  const missionDef = role.missions.find((m) => m.id === session.defId) ?? role.missions.find((m) => m.id === role.drills.find((d) => d.id === session.defId)?.missionId);
+  const listed = role.skills.filter((sk) => !missionDef || missionDef.skillIds.includes(sk.id) || build.activeSkills.includes(sk.id));
+  const skills: SkillResult[] = listed.map((sk) => {
     const own = role.anchors.filter((a) => a.skillId === sk.id);
     const self = user.onboardings.find((o) => o.roleId === role.id)?.selfRatings[sk.id] ?? null;
     if (!build.activeSkills.includes(sk.id)) {

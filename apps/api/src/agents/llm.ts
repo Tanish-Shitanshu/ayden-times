@@ -142,10 +142,11 @@ export class GeminiLlm implements LlmClient {
       return result;
     } catch (e) {
       this.failures += 1;
-      if (this.failures >= 3) {
-        this.openUntil = Date.now() + 60_000;
+      // Open only after four failures in a row and for 20 s, so one burst of rate limits does not send every tester to the scripted fallback for a minute.
+      if (this.failures >= 4) {
+        this.openUntil = Date.now() + 20_000;
         this.failures = 0;
-        warn("llm circuit breaker opened for 60s", { label });
+        warn("llm circuit breaker opened for 20s", { label });
       }
       throw e;
     }

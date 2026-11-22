@@ -34,8 +34,8 @@ function figures(m: MissionState) {
 describe("Executive (Startup CEO)", () => {
   it("is listed as a ready role", async () => {
     const { client } = await setup();
-    const roles = (await client().call("GET", "/roles")).body as { id: string; status: string }[];
-    expect(roles.find((r) => r.id === "executive")?.status).toBe("ready");
+    const role = (await client().call("GET", "/roles/executive")).body as { id: string; status: string };
+    expect(role.status).toBe("ready");
   });
 
   it("ideal run is strong across the skills", async () => {

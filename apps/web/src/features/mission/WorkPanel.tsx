@@ -6,6 +6,7 @@ import { useT, errorText } from "../../lib/i18n";
 import { headingsOf, renderMarkdown, slug } from "../../lib/markdown";
 import type { ActBody, UiEvent } from "./useMission";
 import { artifactText } from "./EventView";
+import { downloadPdf, downloadXlsx, readXlsx } from "../../lib/files";
 
 const CodeEditor = lazy(() => import("./CodeEditor"));
 
@@ -67,6 +68,10 @@ function TicketView({ it }: { it: Extract<WorkItem, { type: "ticket" }> }) {
 function TableView({ it }: { it: Extract<WorkItem, { type: "table" }> }) {
   return (
     <div style={{ padding: 16 }}>
+      <div className="row gap-8" style={{ marginBottom: 8 }}>
+        <span className="spacer" />
+        <Button variant="tonal" icon="download" onClick={() => { void downloadXlsx(it.title, it.columns, it.rows); }}>Download .xlsx</Button>
+      </div>
       <div className="table-scroll" tabIndex={0} role="region" aria-label={it.title}>
         <table className="data-table">
           {it.note && <caption className="t-bm t-secondary" style={{ captionSide: "bottom", textAlign: "left", padding: "10px 12px" }}>{it.note}</caption>}
@@ -186,7 +191,12 @@ export function WorkPanel(p: WorkPanelProps) {
                     </div>
                   </>
                 )}
-                {item.type === "doc" && <DocView md={item.markdown} />}
+                {item.type === "doc" && (
+                  <>
+                    <div className="row gap-8" style={{ padding: "12px 16px 0" }}><span className="spacer" /><Button variant="tonal" icon="picture_as_pdf" onClick={() => { void downloadPdf(item.title, item.markdown, true); }}>Download PDF</Button></div>
+                    <DocView md={item.markdown} />
+                  </>
+                )}
                 {item.type === "ticket" && <TicketView it={item} />}
                 {item.type === "table" && <TableView it={item} />}
                 {item.type === "record" && <RecordView it={item} />}
@@ -278,6 +288,15 @@ function ArtifactComposer({ a, mission, events, act, dark }: { a: ArtifactSpec; 
     try { await act({ kind: "submit_artifact", artifactId: a.id, content: text }); setEditing(false); toast(`${t("ws.submitted")}: ${a.title}`); }
     catch (e) { setErr(e); } finally { setBusy(false); }
   };
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [fileNote, setFileNote] = useState("");
+  const onFile = async (f: File | undefined) => {
+    if (!f) return;
+    setErr(undefined);
+    try { const t = await readXlsx(f); setText(t.slice(0, a.maxChars)); setFileNote(`Read ${f.name} in your browser. Check the table below, then submit.`); }
+    catch (e) { setErr(e instanceof Error ? e : new Error("Could not read that file.")); }
+    if (fileRef.current) fileRef.current.value = "";
+  };
   const empty = !text.trim() || text.trim() === (a.template ?? "").trim();
   const over = text.length > a.maxChars;
   return (
@@ -301,6 +320,17 @@ function ArtifactComposer({ a, mission, events, act, dark }: { a: ArtifactSpec; 
             <textarea className={`art-input ${mono ? "mono" : ""}`} value={text} onChange={(e) => setText(e.target.value)} aria-label={a.title} disabled={!active}
               rows={a.kind === "commit_message" ? 5 : 12} spellCheck={!mono}
               onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && !empty && !over) { e.preventDefault(); submit(); } }} />
+          )}
+          {a.kind === "spreadsheet" && (
+            <div className="row gap-8 wrap" style={{ marginTop: 8 }}>
+              <input ref={fileRef} type="file" accept=".xlsx" hidden onChange={(e) => { void onFile(e.target.files?.[0]); }} aria-label="Upload an .xlsx file" />
+              <Button variant="tonal" icon="upload_file" disabledReason={!active ? t("ws.notActive") : false} onClick={() => fileRef.current?.click()}>Upload .xlsx</Button>
+              <Button variant="text" icon="download" onClick={() => { void downloadXlsx(a.title, (text.split("\n")[0] ?? "").split(/\s*\|\s*/), text.split("\n").slice(1).filter((l) => l.trim()).map((l) => l.split(/\s*\|\s*/))); }}>Download as .xlsx</Button>
+              <span className="t-label t-secondary">{fileNote || "Read in your browser. The file itself is never uploaded."}</span>
+            </div>
+          )}
+          {(a.kind === "memo" || a.kind === "email") && (
+            <div className="row gap-8" style={{ marginTop: 8 }}><Button variant="text" icon="picture_as_pdf" disabledReason={empty ? "Write the memo first." : false} onClick={() => { void downloadPdf(a.title, text); }}>Export PDF</Button></div>
           )}
           <div className="row gap-12 wrap" style={{ marginTop: 8 }}>
             {a.kind === "commit_message" && <span className="t-label tnum" style={{ color: subject.length > 72 ? "var(--warning)" : "var(--text-secondary)" }}>{subject.length}/72{subject.length > 72 ? ` · ${t("ws.subjectHint")}` : ""}</span>}

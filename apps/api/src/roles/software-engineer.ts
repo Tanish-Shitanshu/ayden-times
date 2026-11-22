@@ -1,6 +1,7 @@
 import type { CheckResult, WorkItem } from "@ayden/contract";
 import { diffSize, int, pick, rng, said } from "../domain/text.js";
 import type { AnchorDef, DrillDef, EngineCtx, MissionBuild, MissionDef, RolePack, RunChecksCtx, ScriptedEvent, Vars } from "../domain/types.js";
+import { DECISION_ANCHORS, DECISION_DRILLS, DECISION_MISSION, DECISION_SKILLS } from "./swe-decisions.js";
 import { AGENT_LABEL, hit, person, say, section, sys, trapFrom } from "./helpers.js";
 import { FAMILIES, buildProgram, countTests, parseResults, staticChecks, type SweFamily } from "./swe-code.js";
 
@@ -52,6 +53,13 @@ const ANCHORS: AnchorDef[] = [
   {
     id: "asked_before_edit", skillId: "clarify", kind: "code", text: "Asked a question before the first edit",
     eval: (c) => { const m = firstMsg(c); return m && m.seq < BEFORE_SAVE(c) ? { met: true, seq: m.seq, quote: m.body.slice(0, 120) } : { met: false, note: "No question before you started editing." }; },
+  },
+  {
+    id: "standup_update", skillId: "clarify", kind: "code", text: "Gave a clear standup: a plan, and any blocker or need",
+    eval: (c) => {
+      const e = c.learner.find((m) => m.kind === "message" && m.to === "priya" && m.seq < BEFORE_SAVE(c) && /(plan|today|going to|i will|i'll|first|start)/i.test(m.body) && /(block|stuck|need|depend|question|nothing|no blockers|ask)/i.test(m.body));
+      return e ? { met: true, seq: e.seq, quote: e.body.slice(0, 120) } : { met: false, note: "Tell Priya your plan for the day and any blocker or need." };
+    },
   },
   {
     id: "opened_guide", skillId: "clarify", kind: "code", text: "Read the team guide before editing",
@@ -254,7 +262,7 @@ function build(args: { variantIndex: number; vars: Vars; drill?: DrillDef }): Mi
     {
       title: "Understand the ticket",
       objective: "Read the ticket and the team guide. Ask whatever you need before you touch the code.",
-      onEnter: [say("priya", opening, { quickReplies: ["Yes, I'll start now", "Can I ask a few questions first?"] })],
+      onEnter: [say("priya", opening, { quickReplies: ["Yes, I'll start now", "Can I ask a few questions first?"] }), say("priya", "One thing first: our morning standup. In a line or two, tell me what you plan to do today, and whether anything is blocking you or you need something from me.", { quickReplies: ["Plan: read the ticket, then fix it. Nothing blocking.", "Plan: understand the bug first. I need to ask one thing."] })],
       advanceWhen: { t: "any" as const, of: [{ t: "messaged" as const, to: "priya", n: 1 }, { t: "opened" as const, item: "it_guide" }] },
     },
     {
@@ -415,16 +423,17 @@ export const softwareEngineer: RolePack = {
   icon: "terminal",
   accentHex: "#1a73e8",
   description:
-    "Spend day three at a software company. Fix a customer-facing bug, run real tests in a Google-hosted sandbox, write a commit and pull request your team can follow, and handle a reviewer, a QA engineer, a buddy with a bad idea, and a manager who wants to merge now.",
+    "Two missions. Day three: fix a customer-facing bug, run real tests in a Google-hosted sandbox, write a commit and pull request your team can follow, and handle a reviewer, a QA engineer, a buddy with a bad idea, and a manager who wants to merge now. Week two: three technical decisions. Pick where the data lives and how it runs and scales on Google Cloud, size it with numbers, write decision records, resist a colleague pushing fashion, and change course when new evidence arrives.",
   whatYouWillPractise: [
     "Asking the right question before you write code",
     "Writing commits and pull requests a reviewer can approve in five minutes",
     "Adding tests and handling edge cases before QA finds them",
     "Disagreeing politely in a review, and holding your standards under pressure",
     "Keeping secrets and scope out of your change",
+    "Mission 2: making technical decisions: database, hosting and scale, cost, and changing course on evidence",
   ],
-  skills: SKILLS,
-  anchors: ANCHORS,
+  skills: [...SKILLS, ...DECISION_SKILLS],
+  anchors: [...ANCHORS, ...DECISION_ANCHORS],
   cast: [
     { id: "priya", name: "Priya Nair", title: "Engineering Manager", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Wants it shipped by Friday. Under pressure she says 'just merge it'." },
     { id: "arjun", name: "Arjun Rao", title: "Senior Engineer (reviewer)", kind: "agent", modelLabel: AGENT_LABEL, blurb: "Fair but strict. Gives one valid blocker and one over-engineering suggestion." },
@@ -440,9 +449,9 @@ export const softwareEngineer: RolePack = {
     { id: "swe-tests", typicalWeek: 2, title: "Ship with tests", description: "Every fix comes with a test and handled edge cases.", skillIds: ["verify"], coveredBy: { kind: "mission", id: MISSION.id }, requires: ["verify"] },
     { id: "swe-feature", typicalWeek: 4, title: "Ship a small feature independently", description: "Typical month-one goal.", skillIds: [], coveredBy: null },
     { id: "swe-oncall", typicalWeek: 8, title: "Handle a first incident or on-call note", description: "Planned for a later version.", skillIds: [], coveredBy: null },
-    { id: "swe-design", typicalWeek: 12, title: "Write a short design note", description: "Planned for a later version.", skillIds: [], coveredBy: null },
+    { id: "swe-design", typicalWeek: 4, title: "Write a short design note and defend it", description: "Mission 2: choose a data store and how it runs, size it with numbers, record the decision, and change it on new evidence.", skillIds: ["frame_requirements", "weigh_tradeoffs", "size_and_cost", "decide_and_record", "hold_or_update"], coveredBy: { kind: "mission", id: DECISION_MISSION.id }, requires: ["decide_and_record", "weigh_tradeoffs"] },
   ],
-  missions: [MISSION],
-  drills: DRILLS,
+  missions: [MISSION, DECISION_MISSION],
+  drills: [...DRILLS, ...DECISION_DRILLS],
 };
 

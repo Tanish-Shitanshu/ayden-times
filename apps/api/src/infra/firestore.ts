@@ -131,6 +131,13 @@ export class FirestoreStore implements Store {
   async putFeedback(f: FeedbackRec) {
     await this.col("feedback").doc(f.id).set(f);
   }
+  async deleteFeedback(id: string) {
+    const ref = this.col("feedback").doc(id);
+    const snap = await ref.get();
+    if (!snap.exists) return false;
+    await ref.delete();
+    return true;
+  }
   async listFeedback(limit: number) {
     const snap = await this.col("feedback").orderBy("createdAt", "desc").limit(limit).get();
     return snap.docs.map((d) => d.data() as FeedbackRec);

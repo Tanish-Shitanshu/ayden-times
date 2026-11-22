@@ -10,6 +10,9 @@ const ROLE_NAMES: Record<string, string> = {
   "tech-consulting": "Consulting Analyst",
   executive: "Startup CEO",
   "data-analyst": "Data Analyst",
+  "finance-analyst": "Junior Financial Analyst",
+  procurement: "Procurement Trainee",
+  marketing: "Digital Marketing Associate",
 };
 
 export function Stars({ n }: { n: number }) {

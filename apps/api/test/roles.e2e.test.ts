@@ -119,53 +119,13 @@ describe("Nurse", () => {
   });
 });
 
-describe("Tech Consulting", () => {
-  it("answer-first update with tying numbers is strong; supplier claim triggers a consequence", async () => {
-    const { client } = await setup();
-    const p = await player(client(), "tech-consulting");
-    const margin = p.m.items.find((i) => i.id === "it_margin")!;
-    const note = (margin as { note?: string }).note!;
-    const [a, b] = [...note.matchAll(/(\d+\.\d)%/g)].map((m) => m[1]!);
-    await p.act({ kind: "open_item", itemId: "it_scope" });
-    await p.say("rhea", "Is store staffing in scope? And when do you need the headline?");
-    await p.act({ kind: "advance" });
-    await p.act({ kind: "submit_artifact", artifactId: "ar_tree", content: "Question: why did gross margin fall?\n- Price and discounting\n- Volume and traffic\n- Category mix\n- Supplier cost\nHypothesis: I suspect category mix matters most." });
-    await p.act({ kind: "advance" });
-    const up = await p.act({ kind: "submit_artifact", artifactId: "ar_update", content: `Hi Rhea,\n\nGross margin fell from ${a}% to ${b}%, driven mainly by a mix shift towards lower-margin categories.\n- The lowest-margin category grew its share of revenue.\n- Supplier prices rose only 1.4%, a small effect.\nCaveat: finance and ops revenue totals differ and need reconciling.` });
-    expect(up.delta.canAdvance).toBe(true);
-    await p.act({ kind: "advance" });
-    await p.say("sethi", "Not quite: the data points to mix shift, not supplier prices. I'm fairly confident, but we will reconcile the data. Rhea will confirm the staffing request and scope, and we will update you tomorrow.");
-    await p.say("rhea", "Sethi asked for a store staffing analysis by Monday. That is outside the scope. How should we respond?");
-    const rep = await p.finish();
-    for (const id of ["structure", "answer_first", "numbers_integrity", "scope_mgmt", "stakeholder_comm"]) expect(skill(rep, id).state, id).toBe("strong");
-  });
-
-  it("blaming supplier prices returns as a consequence", async () => {
-    const { client } = await setup();
-    const p = await player(client(), "tech-consulting");
-    await p.act({ kind: "open_item", itemId: "it_scope" });
-    await p.say("rhea", "ok");
-    await p.act({ kind: "advance" });
-    await p.act({ kind: "submit_artifact", artifactId: "ar_tree", content: "- supplier" });
-    await p.act({ kind: "advance" });
-    await p.act({ kind: "submit_artifact", artifactId: "ar_update", content: "Supplier prices drove a 73% margin collapse." });
-    await p.act({ kind: "advance" });
-    const ev = (await p.c.call("GET", `/missions/${p.m.id}/events?since=0`)).body.events as { kind: string }[];
-    expect(ev.some((e) => e.kind === "consequence")).toBe(true);
-    await p.say("sethi", "Sure, I'll do the staffing analysis by Monday.");
-    const rep = await p.finish();
-    expect(skill(rep, "numbers_integrity").state).toBe("gap");
-    expect(skill(rep, "scope_mgmt").state).not.toBe("strong");
-  });
-});
-
 describe("Roles listing", () => {
-  it("lists six roles with only the built ones ready", async () => {
+  it("lists the four shown roles, all ready, and keeps the hidden ones reachable by id", async () => {
     const { client } = await setup();
     const roles = (await client().call("GET", "/roles")).body as { id: string; status: string }[];
-    expect(roles.length).toBe(6);
-    expect(roles.filter((r) => r.status === "ready").map((r) => r.id).sort()).toEqual(["banking-ops", "executive", "nurse", "software-engineer", "tech-consulting"]);
-    expect(roles.find((r) => r.id === "data-analyst")!.status).toBe("planned");
+    expect(roles.map((r) => r.id).sort()).toEqual(["finance-analyst", "procurement", "software-engineer", "tech-consulting"]);
+    expect(roles.every((r) => r.status === "ready")).toBe(true);
+    expect(((await client().call("GET", "/roles/data-analyst")).body as { status: string }).status).toBe("planned");
     const d = (await client().call("GET", "/roles/nurse")).body;
     expect(d.safetyNote).toMatch(/clinician/i);
     expect(d.skills.length).toBe(5);

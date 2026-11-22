@@ -3,6 +3,7 @@ import type { RolePack } from "../domain/types.js";
 /** Planned: needs the BigQuery wiring (real SQL on a public dataset). Shown as a non-clickable "Planned" card. */
 export const dataAnalyst: RolePack = {
   id: "data-analyst",
+  hidden: true,
   status: "planned",
   title: "Data Analyst (Business Analytics)",
   tagline: "Write real SQL, then explain it to a stakeholder.",

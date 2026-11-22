@@ -8,7 +8,8 @@
     "build": "tsup src/server.ts --format esm --target node22 --out-dir dist --clean",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src test"
+    "lint": "eslint src test",
+    "test:live": "vitest run -c vitest.live.config.ts test/finance.e2e.test.ts test/procurement.e2e.test.ts test/consulting.e2e.test.ts test/swe-decisions.e2e.test.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.1.5",

@@ -16,7 +16,7 @@ export const API_BASE = "/api/v1";
 /* ───────────── primitives ───────────── */
 
 export type ISODate = string;
-export type RoleId = "software-engineer" | "tech-consulting" | "nurse" | "banking-ops" | "executive" | "data-analyst";
+export type RoleId = "software-engineer" | "tech-consulting" | "nurse" | "banking-ops" | "executive" | "data-analyst" | "finance-analyst" | "procurement" | "marketing";
 export type SkillId = string; // defined per role in RoleDetail.skills (never hardcode in UI)
 export type PersonId = string;
 export type Lang = "en" | "hi" | "bn" | "te" | "mr" | "ta" | "gu" | "ur" | "kn" | "ml" | "or" | "pa" | "as";
@@ -189,7 +189,7 @@ export type WorkItem =
 
 export interface ArtifactSpec {
   id: string;
-  kind: "text" | "commit_message" | "pr_description" | "sbar" | "memo" | "email" | "sql" | "code";
+  kind: "text" | "commit_message" | "pr_description" | "sbar" | "memo" | "email" | "sql" | "code" | "spreadsheet";
   title: string; // "Commit message"
   instructions: string; // plain language
   template?: string; // optional prefilled skeleton

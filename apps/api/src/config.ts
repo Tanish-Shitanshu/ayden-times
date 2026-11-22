@@ -32,6 +32,8 @@ export const config = {
   project: env.GOOGLE_CLOUD_PROJECT ?? "",
   firestoreDatabase: env.FIRESTORE_DATABASE ?? "(default)",
   sessionSecret: sessionSecret(),
+  /** Enables the admin page when set (Secret Manager in production). Unset means the admin routes do not exist. */
+  adminToken: env.ADMIN_TOKEN && env.ADMIN_TOKEN.length >= 16 ? env.ADMIN_TOKEN : "",
   /** gemini = Google's code-execution sandbox. local-python = dev/test only, never in production. */
   sandbox: (env.SANDBOX ?? "gemini") as "gemini" | "local-python",
   region: env.CLOUD_RUN_REGION ?? env.REGION ?? "asia-south1",
